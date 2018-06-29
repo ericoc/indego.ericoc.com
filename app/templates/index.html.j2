@@ -22,7 +22,7 @@
 -->
 
 {% macro graph(count, emoji=emoji) %}
-{% for item in count %}█{% endfor %}
+{%- for item in range(count) -%}█{%- endfor -%}
 {% endmacro %}
 
 
@@ -42,7 +42,7 @@
                 <td><a href="#{{ indego_kioskId }}">{{ indego_kioskId }}</a></td>
                 <td><span title="{{ indego_station['name'] }} ({{ indego_station['addressZipCode'] }})">{{ indego_station['name'] }}</span></td>
                 <td>{{ indego_station['bikesAvailable'] }}</td>
-                <td><span class="bikes">{{ graph(indego_station['bikesAvailable']) }}</span><span class="docks">{{ indego_station['docksAvailable'] }}</span></td>
+                <td><span class="bikes">{{ graph(indego_station['bikesAvailable']) }}</span><span class="docks">{{ graph(indego_station['docksAvailable']) }}</span></td>
                 <td>{{ indego_station['docksAvailable'] }}</td>
                 <td class="graphcol"><a target="popup" onclick="window.open('/chart.php?kioskId={{ indego_kioskId }}','popup','width=800,height=500'); return false;">📊</a></td>
             </tr>
