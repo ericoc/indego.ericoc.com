@@ -6,3 +6,4 @@ venv/
 *.pyc
 .idea
 .reload
+db_creds.py
