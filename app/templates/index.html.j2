@@ -35,9 +35,9 @@
             <tr id="{{ indego_kioskId }}">
                 <td><a href="#{{ indego_kioskId }}">{{ indego_kioskId }}</a></td>
                 <td><span title="{{ indego_station['name'] }} ({{ indego_station['addressZipCode'] }})">{{ indego_station['name'] }}</span></td>
-                <td>{{ }}</td>
+                <td>{{ indego_station['bikesAvailable'] }}</td>
                 <td><span class="bikes">███████████</span><span class="docks">███████████████████</span></td>
-                <td>{{ }}</td>
+                <td>{{ indego_station['docksAvailable'] }}</td>
                 <td class="graphcol"><a target="popup" onclick="window.open('/chart.php?kioskId={{ indego_kioskId }}','popup','width=800,height=500'); return false;">📊</a></td>
             </tr>
               {% endfor %}
