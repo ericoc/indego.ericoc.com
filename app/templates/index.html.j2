@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <link href="/static/indego.css" rel="stylesheet" type="text/css">
+        <link rel="shortcut icon" href="/static/favicon.ico">
+        <link rel="apple-touch-icon" href="/static/icon.png">
+        <title>Indego Bikes!</title>
+    </head>
+    <body>
+        <h1><a href="https://indegopy.ericoc.com/">Indego Bikes</a> 🚲</h1><br>
+
+        <form method="get">
+            <input type="text" name="search"> <i>(i.e. "<a href="/search/fairmount">fairmount</a>" or "<a href="/search/19107">19107</a>")</i>
+            <input type="submit" value="Search!">
+        </form><br>
+
+<!--
+
+{{ indego_stations }}
+
+-->
+
+        <table>
+            <tr class="header">
+                <td>Kiosk ID</td>
+                <td>Name</td>
+                <td>Bikes</td>
+                <td></td>
+                <td>Docks</td>
+                <td>History</td>
+            </tr>
+            {% if indego_stations is defined and indego_stations != None %}
+              {% for indego_kioskId, indego_station in indego_stations.items() %}
+            <tr id="{{ indego_kioskId }}">
+                <td><a href="#{{ indego_kioskId }}">{{ indego_kioskId }}</a></td>
+                <td><span title="{{ indego_station['name'] }} ({{ indego_station['addressZipCode'] }})">{{ indego_station['name'] }}</span></td>
+                <td>{{ }}</td>
+                <td><span class="bikes">███████████</span><span class="docks">███████████████████</span></td>
+                <td>{{ }}</td>
+                <td class="graphcol"><a target="popup" onclick="window.open('/chart.php?kioskId={{ indego_kioskId }}','popup','width=800,height=500'); return false;">📊</a></td>
+            </tr>
+              {% endfor %}
+            {% else %}
+            <tr>
+               <td align="center" colspan="6"><i>No active stations found!</i><td>
+            </tr>
+            {% endif %}
+            <tr class="header">
+                <td>Totals</td>
+                <td>TBD stations</td>
+                <td>TBD</td>
+                <td></td>
+                <td>TBD</td>
+                <td></td>
+            </tr>
+        </table>
+        <br>
+        <pre>courtesy of <a href="https://www.rideindego.com/" target="_blank">Indego</a></pre><br>
+        <pre><a href="https://github.com/ericoc/indegopy.ericoc.com/" target="_blank">view source @ github</a> | <a href="https://github.com/ericoc/indego-py-lib/" target="_blank">my Indego Python library</a></pre>
+    </body>
+</html>
+
