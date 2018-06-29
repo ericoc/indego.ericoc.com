@@ -21,6 +21,12 @@
 
 -->
 
+{% macro graph(count, emoji=emoji) %}
+{% for item in count %}█{% emdfor %}
+{% endmacro %}
+
+
+
         <table>
             <tr class="header">
                 <td>Kiosk ID</td>
@@ -30,22 +36,22 @@
                 <td>Docks</td>
                 <td>History</td>
             </tr>
-            {% if indego_stations is defined and indego_stations != None %}
-              {% for indego_kioskId, indego_station in indego_stations.items() %}
+            {%- if indego_stations is defined and indego_stations != None %}
+              {%- for indego_kioskId, indego_station in indego_stations.items() %}
             <tr id="{{ indego_kioskId }}">
                 <td><a href="#{{ indego_kioskId }}">{{ indego_kioskId }}</a></td>
                 <td><span title="{{ indego_station['name'] }} ({{ indego_station['addressZipCode'] }})">{{ indego_station['name'] }}</span></td>
                 <td>{{ indego_station['bikesAvailable'] }}</td>
-                <td><span class="bikes">███████████</span><span class="docks">███████████████████</span></td>
+                <td><span class="bikes">{{ graph(indego_station['bikesAvailable']) }}</span><span class="docks">{{ indego_station['docksAvailable'] }}</span></td>
                 <td>{{ indego_station['docksAvailable'] }}</td>
                 <td class="graphcol"><a target="popup" onclick="window.open('/chart.php?kioskId={{ indego_kioskId }}','popup','width=800,height=500'); return false;">📊</a></td>
             </tr>
-              {% endfor %}
-            {% else %}
+              {%- endfor %}
+            {%- else %}
             <tr>
                <td align="center" colspan="6"><i>No active stations found!</i><td>
             </tr>
-            {% endif %}
+            {%- endif %}
             <tr class="header">
                 <td>Totals</td>
                 <td>TBD stations</td>
