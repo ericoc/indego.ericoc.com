@@ -1,0 +1,25 @@
+{%- if indego_station and station_data is defined -%}
+
+var data = ([
+{%- for data_point in station_data %}
+    [{{ data_point['added'] }}, {{ data_point['bikesAvailable'] }}]
+    {%- if not loop.last -%},{%- endif -%}
+{%- endfor %}
+]);
+
+$(function () {
+    $('#bikesgraph').highcharts({
+        chart: { zoomType: 'x' },
+        title: { text: 'Bikes available at {{ indego_station[0]['name'] }}' },
+        subtitle: { text: document.ontouchstart === undefined ? 'Click and drag in the plot area to zoom in' : 'Pinch the chart to zoom in' },
+        xAxis: { title: { text: 'when' }, type: 'datetime' },
+        yAxis: { title: { text: 'bikes' }, max: {{ indego_station[0]['totalDocks'] }} },
+        legend: { enabled: true },
+        series: [{ type: 'area', name: 'Bikes Available', data: data }]
+    });
+});
+
+Highcharts.setOptions({
+    global: { useUTC: false }
+});
+{%- endif -%}
