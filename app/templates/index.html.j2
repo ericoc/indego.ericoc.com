@@ -35,15 +35,15 @@
             {%- endmacro %}
 
             {%- if indego_stations is defined and indego_stations != None %}
-              {%- for indego_kioskId, indego_station in indego_stations.items() %}
+              {%- for indego_kiosk_id, indego_station in indego_stations.items() %}
 
-            <tr id="{{ indego_kioskId }}">
-                <td><a href="#{{ indego_kioskId }}">{{ indego_kioskId }}</a></td>
+            <tr id="{{ indego_kiosk_id }}">
+                <td><a href="#{{ indego_kiosk_id }}">{{ indego_kiosk_id }}</a></td>
                 <td><span title="{{ indego_station['name'] }} ({{ indego_station['addressZipCode'] }})">{{ indego_station['name'] }}</span></td>
                 <td>{{ indego_station['bikesAvailable'] }}</td>
                 <td><span class="bikes">{{ graph(indego_station['bikesAvailable']) }}</span><span class="docks">{{ graph(indego_station['docksAvailable']) }}</span></td>
                 <td>{{ indego_station['docksAvailable'] }}</td>
-                <td class="graphcol"><a target="popup" onclick="window.open('/chart/{{ indego_kioskId }}','popup','width=800,height=500'); return false;">📊</a></td>
+                <td class="graphcol"><a target="popup" onclick="window.open('/chart/{{ indego_kiosk_id }}','popup','width=800,height=500'); return false;">📊</a></td>
             </tr>
               {%- endfor %}
 

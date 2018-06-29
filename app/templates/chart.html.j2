@@ -1,0 +1,23 @@
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <title>Indego Bike Share Availability</title>
+        <script type="text/javascript" src="/static/js/jquery.min.js"></script>
+        <script type="text/javascript" src="/static/js/highcharts.js"></script>
+        <script type="text/javascript" src="/static/js/exporting.js"></script>
+    {%- if station is defined and station is mapping and station|length > 0 %}
+        <script type="text/javascript" src="/indapi/{{ station['kioskId'] }}"></script>
+    {%- endif %}
+        <link href="/static/indego.css" rel="stylesheet" type="text/css">
+        <link rel="shortcut icon" href="/static/favicon.ico">
+        <link rel="apple-touch-icon" href="/static/icon.png">
+    </head>
+    <body>
+    {%- if station is defined and station is mapping and station|length > 0 %}
+        <div id="bikesgraph"></div>
+    {%- else %}
+        Station not found.
+    {%- endif %}
+    </body>
+</html>
