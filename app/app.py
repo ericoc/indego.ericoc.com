@@ -17,7 +17,7 @@ def check_kiosk_id(kiosk_id=None):
     return None
 
 
-def jawn(search_string=None, emoji=False):
+def home(search_string=None, emoji=False):
 
     indego = Indego()
     search_results = indego.get_stations(search_string)
@@ -25,7 +25,7 @@ def jawn(search_string=None, emoji=False):
     return render_template('index.html.j2', indego_stations=search_results, emoji=emoji)
 
 
-def chart_jawn(kiosk_id=None):
+def chart_web(kiosk_id=None):
 
     chart_kiosk = check_kiosk_id(kiosk_id)
 
@@ -39,21 +39,39 @@ def chart_jawn(kiosk_id=None):
     return render_template('chart.html.j2', indego_stations=indego_stations), code
 
 
-def chartjs_jawn(kiosk_id=None):
+def chartjs_web(kiosk_id=None):
 
     chartjs_kiosk = check_kiosk_id(kiosk_id)
 
     if chartjs_kiosk:
-        indego_station = indego_station=list(chartjs_kiosk.values())
-        chartjs_data = fetch_chart_data(kiosk_id)
+        indego_stations = list(chartjs_kiosk.values())
+        print(indego_stations)
+        code = 200
+    else:
+        indego_stations = None
+        code = 404
+
+    chartjs_response = render_template('chart.js.j2', indego_stations=indego_stations), code
+    response = make_response(chartjs_response)
+    response.headers['Content-Type'] = 'text/javascript'
+    return response
+
+
+def chartdata_web(kiosk_id=None):
+
+    chartdata_kiosk = check_kiosk_id(kiosk_id)
+
+    if chartdata_kiosk:
+        indego_station = list(chartdata_kiosk.values())
+        chart_data = fetch_chart_data(kiosk_id)
         code = 200
     else:
         indego_station = None
-        chartjs_data = None
+        chart_data = None
         code = 404
 
-    chartjs_response = render_template('chart.js.j2', indego_station=indego_station, station_data=chartjs_data), code
-    response = make_response(chartjs_response)
+    chartdata_response = render_template('chart_data.js.j2', indego_station=indego_station, chart_data=chart_data), code
+    response = make_response(chartdata_response)
     response.headers['Content-Type'] = 'text/javascript'
     return response
 
@@ -71,19 +89,23 @@ def fetch_chart_data(kiosk_id):
 
 @app.route('/')
 def index():
-    return jawn()
+    return home()
 
 @app.route('/search/<search_string>')
 def search_stations(search_string):
-    return jawn(search_string)
+    return home(search_string)
 
 @app.route('/chart/<chart_id>')
 def chart_station(chart_id):
-    return chart_jawn(kiosk_id=chart_id)
+    return chart_web(kiosk_id=chart_id)
 
 @app.route('/chartjs/<chartjs_id>')
 def chartjs_station(chartjs_id):
-    return chartjs_jawn(kiosk_id=chartjs_id)
+    return chartjs_web(kiosk_id=chartjs_id)
+
+@app.route('/chartdata/<chartdata_id>')
+def chartdata_station(chartdata_id):
+    return chartdata_web(kiosk_id=chartdata_id)
 
 @app.route('/favicon.ico')
 @app.route('/icon.png')

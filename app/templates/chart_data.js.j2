@@ -1,0 +1,8 @@
+{%- if indego_station and chart_data is defined and chart_data is iterable -%}
+var data_{{ indego_station[0]['kioskId'] }} = ([
+  {%- for data_point in chart_data %}
+    [{{ data_point['added'] }}, {{ data_point['bikesAvailable'] }}]
+    {%- if not loop.last -%},{%- endif -%}
+  {%- endfor %}
+]);
+{%- endif -%}

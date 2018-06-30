@@ -11,6 +11,7 @@
         <script type="text/javascript" src="/static/js/highcharts.js"></script>
         <script type="text/javascript" src="/static/js/exporting.js"></script>
       {%- for indego_station in indego_stations %}
+        <script type="text/javascript" src="/chartdata/{{ indego_station['kioskId'] }}"></script>
         <script type="text/javascript" src="/chartjs/{{ indego_station['kioskId'] }}"></script>
       {%- endfor %}
     {%- endif %}
@@ -19,6 +20,7 @@
     {%- if indego_stations is defined and indego_stations is iterable -%}
       {%- for indego_station in indego_stations %}
         <div id="bikesgraph_{{ indego_station['kioskId'] }}"></div>
+        {%- if not loop.last -%}<br>{%- endif -%}
       {%- endfor %}
     {%- else %}
         Station not found.
