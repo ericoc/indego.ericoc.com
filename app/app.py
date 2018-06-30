@@ -30,13 +30,13 @@ def chart_jawn(kiosk_id=None):
     chart_kiosk = check_kiosk_id(kiosk_id)
 
     if chart_kiosk:
-            station = chart_kiosk
+            indego_stations = station = list(chart_kiosk.values())
             code = 200
     else:
-            station = None
+            indego_stations = None
             code = 404
 
-    return render_template('chart.html.j2', indego_stations=list(station.values())), code
+    return render_template('chart.html.j2', indego_stations=indego_stations), code
 
 
 def chartjs_jawn(kiosk_id=None):
@@ -44,13 +44,15 @@ def chartjs_jawn(kiosk_id=None):
     chartjs_kiosk = check_kiosk_id(kiosk_id)
 
     if chartjs_kiosk:
+        indego_station = indego_station=list(chartjs_kiosk.values())
         chartjs_data = fetch_chart_data(kiosk_id)
         code = 200
     else:
+        indego_station = None
         chartjs_data = None
         code = 404
 
-    chartjs_response = render_template('chart.js.j2', indego_station=list(chartjs_kiosk.values()), station_data=chartjs_data), code
+    chartjs_response = render_template('chart.js.j2', indego_station=indego_station, station_data=chartjs_data), code
     response = make_response(chartjs_response)
     response.headers['Content-Type'] = 'text/javascript'
     return response

@@ -6,7 +6,7 @@
         <link href="/static/indego.css" rel="stylesheet" type="text/css">
         <link rel="shortcut icon" href="/static/favicon.ico">
         <link rel="apple-touch-icon" href="/static/icon.png">
-    {%- if indego_stations is defined -%}
+    {%- if indego_stations is defined and indego_stations is iterable -%}
         <script type="text/javascript" src="/static/js/jquery.min.js"></script>
         <script type="text/javascript" src="/static/js/highcharts.js"></script>
         <script type="text/javascript" src="/static/js/exporting.js"></script>
@@ -16,9 +16,9 @@
     {%- endif %}
     </head>
     <body>
-    {%- if indego_stations is defined -%}
+    {%- if indego_stations is defined and indego_stations is iterable -%}
       {%- for indego_station in indego_stations %}
-        <div id="bikesgraph"></div>
+        <div id="bikesgraph_{{ indego_station['kioskId'] }}"></div>
       {%- endfor %}
     {%- else %}
         Station not found.
