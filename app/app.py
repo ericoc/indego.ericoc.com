@@ -47,7 +47,6 @@ def chartjs_web(kiosk_id=None):
 
     if chartjs_kiosk:
         indego_stations = list(chartjs_kiosk.values())
-        print(indego_stations)
         code = 200
     else:
         indego_stations = None
