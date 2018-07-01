@@ -7,14 +7,13 @@ app = Flask(__name__)
 
 def check_kiosk_id(kiosk_id=None):
 
-    if kiosk_id and kiosk_id.isdigit() and len(kiosk_id) == 4:
-        indego = Indego()
-        find_kiosk_id = indego.get_stations(kiosk_id)
+    indego = Indego()
+    find_kiosk_id = indego.get_stations(kiosk_id)
 
-        if find_kiosk_id and len(find_kiosk_id) == 1:
-             return find_kiosk_id
-
-    return None
+    if find_kiosk_id and len(find_kiosk_id) >= 1:
+        return find_kiosk_id
+    else:
+        return None
 
 
 def home(search_string=None, emoji=False):
@@ -25,18 +24,21 @@ def home(search_string=None, emoji=False):
     return render_template('index.html.j2', indego_stations=search_results, emoji=emoji)
 
 
-def chart_web(kiosk_id=None):
+def chart_web(chart_string=None):
 
-    chart_kiosk = check_kiosk_id(kiosk_id)
+    if chart_string:
+        chart_results = check_kiosk_id(chart_string)
+    else:
+        chart_results = None
 
-    if chart_kiosk:
-            indego_stations = station = list(chart_kiosk.values())
+    if chart_results:
+            chart_stations = list(chart_results.values())
             code = 200
     else:
-            indego_stations = None
+            chart_stations = None
             code = 404
 
-    return render_template('chart.html.j2', indego_stations=indego_stations), code
+    return render_template('chart.html.j2', chart_stations=chart_stations, chart_string=chart_string), code
 
 
 def chartjs_web(kiosk_id=None):
@@ -95,9 +97,9 @@ def index():
 def search_stations(search_string):
     return home(search_string)
 
-@app.route('/chart/<chart_id>')
-def chart_station(chart_id):
-    return chart_web(kiosk_id=chart_id)
+@app.route('/chart/<chart_string>')
+def chart_station(chart_string):
+    return chart_web(chart_string)
 
 @app.route('/chartjs/<chartjs_id>')
 def chartjs_station(chartjs_id):

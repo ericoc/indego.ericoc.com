@@ -6,20 +6,20 @@
         <link href="/static/indego.css" rel="stylesheet" type="text/css">
         <link rel="shortcut icon" href="/static/favicon.ico">
         <link rel="apple-touch-icon" href="/static/icon.png">
-    {%- if indego_stations is defined and indego_stations is iterable -%}
+    {%- if chart_stations is defined and chart_stations is iterable and chart_string -%}
         <script type="text/javascript" src="/static/js/jquery.min.js"></script>
         <script type="text/javascript" src="/static/js/highcharts.js"></script>
         <script type="text/javascript" src="/static/js/exporting.js"></script>
-      {%- for indego_station in indego_stations %}
-        <script type="text/javascript" src="/chartdata/{{ indego_station['kioskId'] }}"></script>
-        <script type="text/javascript" src="/chartjs/{{ indego_station['kioskId'] }}"></script>
+      {%- for chart_station in chart_stations %}
+        <script type="text/javascript" src="/chartdata/{{ chart_station['kioskId'] }}"></script>
       {%- endfor %}
+        <script type="text/javascript" src="/chartjs/{{ chart_string }}"></script>
     {%- endif %}
     </head>
     <body>
-    {%- if indego_stations is defined and indego_stations is iterable -%}
-      {%- for indego_station in indego_stations %}
-        <div id="bikesgraph_{{ indego_station['kioskId'] }}"></div>
+    {%- if chart_stations is defined and chart_stations is iterable -%}
+      {%- for chart_station in chart_stations %}
+        <div id="bikesgraph_{{ chart_station['kioskId'] }}"></div>
         {%- if not loop.last -%}<br>{%- endif -%}
       {%- endfor %}
     {%- else %}
