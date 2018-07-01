@@ -10,10 +10,10 @@
     </head>
 
     <body>
-        <h1><a href="https://indegopy.ericoc.com/">Indego Bikes</a> <a href="https://xn--h78h.ericoc.com/">🚲</a></h1><br>
+        <h1><a href="{{ url_for('index') }}">Indego Bikes</a> <a href="https://xn--h78h.ericoc.com/">🚲</a></h1><br>
 
         <form method="get">
-            <input type="text" name="search"> <i>(i.e. "<a href="/search/fairmount">fairmount</a>" or "<a href="/search/19107">19107</a>")</i>
+            <input type="text" name="search"> <i>(i.e. "<a href="{{ url_for('search_stations', search_string='fairmount') }}">fairmount</a>" or "<a href="{{ url_for('search_stations', search_string='19107') }}">19107</a>")</i>
             <input type="submit" value="Search!">
         </form><br>
 
@@ -43,7 +43,7 @@
                 <td>{{ indego_station['bikesAvailable'] }}</td>
                 <td><span class="bikes">{{ graph(indego_station['bikesAvailable']) }}</span><span class="docks">{{ graph(indego_station['docksAvailable']) }}</span></td>
                 <td>{{ indego_station['docksAvailable'] }}</td>
-                <td class="graphcol"><a target="popup" onclick="window.open('/chart/{{ indego_kiosk_id }}','popup','width=800,height=500'); return false;">📊</a></td>
+                <td class="graphcol"><a target="popup" onclick="window.open('{{ url_for('chart_station', chart_string=indego_kiosk_id) }}','popup','width=800,height=500'); return false;">📊</a></td>
             </tr>
               {%- endfor %}
 
