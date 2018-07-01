@@ -3,7 +3,7 @@ $(function () {
   {%- for indego_station in indego_stations %}
     $('#bikesgraph_{{ indego_station['kioskId'] }}').highcharts({
         chart: { zoomType: 'x' },
-        title: { text: 'Bikes available at {{ indego_station['name'] }}' },
+        title: { text: "Bikes available at {{ indego_station['name'] }}" },
         subtitle: { text: document.ontouchstart === undefined ? 'Click and drag in the plot area to zoom in' : 'Pinch the chart to zoom in' },
         xAxis: { title: { text: 'when' }, type: 'datetime' },
         yAxis: { title: { text: 'bikes' }, max: {{ indego_station['totalDocks'] }} },
