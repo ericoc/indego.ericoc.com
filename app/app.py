@@ -5,28 +5,20 @@ import db_creds
 
 app = Flask(__name__)
 
-def check_kiosk_id(kiosk_id=None):
+def find_stations(search=None):
 
     indego = Indego()
-    find_kiosk_id = indego.get_stations(kiosk_id)
+    station_results = indego.get_stations(search)
 
-    if find_kiosk_id and len(find_kiosk_id) >= 1:
-        return find_kiosk_id
+    if station_results and len(station_results) >= 1:
+        return station_results
     else:
         return None
 
 
-def home(search_string=None, emoji=False):
-
-    indego = Indego()
-    search_results = indego.get_stations(search_string)
-
-    return render_template('index.html.j2', indego_stations=search_results, emoji=emoji)
-
-
 def fetch_chart_data(fetch_data_id):
 
-    if not fetch_data_id or not len(fetch_data_id) == 4 or not check_kiosk_id(fetch_data_id):
+    if not fetch_data_id or not len(fetch_data_id) == 4 or not find_stations(fetch_data_id):
         return None
 
     fetch_data_query = "SELECT UNIX_TIMESTAMP(`added`)*1000 AS `added`, `bikesAvailable` FROM `data` WHERE `kioskId` = " + fetch_data_id + " AND `added` > NOW() - INTERVAL 1 MONTH ORDER BY `added` ASC;"
@@ -38,17 +30,17 @@ def fetch_chart_data(fetch_data_id):
 
 
 @app.route('/')
-def index():
-    return home()
+def index(search_string=None):
+    return render_template('index.html.j2', indego_stations=find_stations(search_string))
 
 @app.route('/search/<search_string>')
 def search_stations(search_string=None):
-    return home(search_string)
+    return index(search_string)
 
 @app.route('/chart/<chart_string>')
 def chart_station(chart_string=None):
 
-    chart_results = check_kiosk_id(chart_string)
+    chart_results = find_stations(chart_string)
 
     if chart_results:
             chart_stations = list(chart_results.values())
@@ -63,7 +55,7 @@ def chart_station(chart_string=None):
 @app.route('/chartjs/<chartjs_id>')
 def chartjs_station(chartjs_id=None):
 
-    chartjs_results = check_kiosk_id(chartjs_id)
+    chartjs_results = find_stations(chartjs_id)
 
     if chartjs_results:
         chartjs_stations = list(chartjs_results.values())
@@ -84,7 +76,7 @@ def chartdata_station(chartdata_id=None):
     if not chartdata_id or not len(chartdata_id) == 4:
         chartdata_result = None
     else:
-        chartdata_result = check_kiosk_id(chartdata_id)
+        chartdata_result = find_stations(chartdata_id)
 
     if chartdata_result:
         chartdata_station = list(chartdata_result.values())
