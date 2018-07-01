@@ -1,4 +1,4 @@
-from flask import Flask, render_template, send_from_directory, request, make_response, url_for
+from flask import Flask, render_template, send_from_directory, request, make_response, url_for, redirect
 from indego import Indego
 import _mysql
 import db_creds
@@ -36,6 +36,10 @@ def index(search_string=None):
 @app.route('/search/<search_string>')
 def search_stations(search_string=None):
     return index(search_string)
+
+@app.route('/search')
+def search_form():
+    return redirect(url_for('search_stations', search_string=request.args.get('search')))
 
 @app.route('/chart/<chart_string>')
 def chart_station(chart_string=None):
