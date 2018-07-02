@@ -30,7 +30,7 @@ def fetch_chart_data(fetch_data_id):
 
 
 @app.route('/')
-def index(search_string=None):
+def index(search_string=None, emoji=False):
     return render_template('index.html.j2', indego_stations=find_stations(search_string))
 
 @app.route('/search/<search_string>')
