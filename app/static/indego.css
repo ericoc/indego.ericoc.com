@@ -1,42 +1,42 @@
 .header {
-	font-weight:	bold;
-	border:		1px solid #000;
-	font-family:	Tahoma, sans-serif;
+    font-weight:    bold;
+    border:         1px solid #000;
+    font-family:    Tahoma, sans-serif;
 }
 
 .graphcol {
-	text-align:	center;
+    text-align: center;
 }
 
 #bikesgraph {
-	min-width:	310px;
-	height:		400px;
-	margin:		0 auto;
+    min-width:  310px;
+    height:     400px;
+    margin:     0 auto;
 }
 
 table, tr, td {
-	border-collapse:	collapse;
-	border:			1px dotted #000;
+    border-collapse:    collapse;
+    border:             1px dotted #000;
 }
 
 tr:nth-child(2n) {
-	background-color:	#eee;
+    background-color:   #eee;
 }
 
 tr:target {
-	background-color:	orange;
+    background-color:   orange;
 }
 
 .bikes {
-	color:	#16216a;
+    color:  #16216a;
 }
 
 .docks {
-	color:	#777;
+    color:  #777;
 }
 
 h1 {
-	color:			#16216a;
-	text-decoration:	underline;
-	font-family:		Tahoma, sans-serif;
+    color:              #16216a;
+    text-decoration:    underline;
+    font-family:        Tahoma, sans-serif;
 }
