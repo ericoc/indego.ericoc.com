@@ -31,11 +31,16 @@ def fetch_chart_data(fetch_data_id):
 
 @app.route('/')
 def index(search_string=None, emoji=False):
-    return render_template('index.html.j2', indego_stations=find_stations(search_string))
+
+    if request.headers['Host']:
+        if request.headers['Host'] == 'xn--h78h.ericoc.com' or request.headers['Host'] == 'xn--h78h.ericoc.com.':
+            emoji = True
+
+    return render_template('index.html.j2', indego_stations=find_stations(search_string), emoji=emoji)
 
 @app.route('/search/<search_string>')
 def search_stations(search_string=None):
-    return index(search_string)
+    return index(search_string=search_string)
 
 @app.route('/search')
 def search_form():
