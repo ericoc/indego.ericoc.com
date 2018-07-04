@@ -10,7 +10,7 @@
     </head>
 
     <body>
-        <h1><a href="{{ url_for('index') }}">Indego Bikes</a> <a href="https://xn--h78h.ericoc.com/">🚲</a></h1><br>
+        <h1><a href="https://indegopy.ericoc.com/">Indego Bikes</a> <a href="https://xn--h78h.ericoc.com/">🚲</a></h1><br>
 
         <form method="get" action="{{ url_for('search_form') }}">
             <input type="text" name="search"> <i>(i.e. "<a href="{{ url_for('search_stations', search_string='fairmount') }}">fairmount</a>" or "<a href="{{ url_for('search_stations', search_string='19107') }}">19107</a>")</i>
@@ -42,12 +42,10 @@
                 <td><span title="{{ indego_station['name'] }} ({{ indego_station['addressZipCode'] }})">{{ indego_station['name'] }}</span></td>
                 <td>{{ indego_station['bikesAvailable'] }}</td>
                 <td>
-                {%- if emoji is True %}
-                  <span class="bikes">{{ graph(indego_station['bikesAvailable'], '🚲 ') }}</span>
-                  <span class="docks">{{ graph(indego_station['docksAvailable'], '-') }}</span>
+                {%- if emoji %}
+                  <span class="bikes">{{ graph(indego_station['bikesAvailable'], '🚲 ') }}</span><span class="docks">{{ graph(indego_station['docksAvailable'], '-') }}</span>
                 {%- else %}
-                  <span class="bikes">{{ graph(indego_station['bikesAvailable']) }}</span>
-                  <span class="docks">{{ graph(indego_station['docksAvailable']) }}</span>
+                  <span class="bikes">{{ graph(indego_station['bikesAvailable']) }}</span><span class="docks">{{ graph(indego_station['docksAvailable']) }}</span>
                 {%- endif %}
                 </td>
                 <td>{{ indego_station['docksAvailable'] }}</td>
