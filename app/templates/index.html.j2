@@ -28,9 +28,9 @@
                 <td>History</td>
             </tr>
 
-            {%- macro graph(count, emoji=emoji) %}
+            {%- macro graph(count, character='█') %}
               {%- if count > 0 -%}
-                {%- for item in range(count) -%}█{%- endfor -%}
+                {%- for item in range(count) -%}{{ character }}{%- endfor -%}
               {%- endif -%}
             {%- endmacro %}
 
@@ -41,7 +41,15 @@
                 <td><a href="#{{ indego_kiosk_id }}">{{ indego_kiosk_id }}</a></td>
                 <td><span title="{{ indego_station['name'] }} ({{ indego_station['addressZipCode'] }})">{{ indego_station['name'] }}</span></td>
                 <td>{{ indego_station['bikesAvailable'] }}</td>
-                <td><span class="bikes">{{ graph(indego_station['bikesAvailable']) }}</span><span class="docks">{{ graph(indego_station['docksAvailable']) }}</span></td>
+                <td>
+                {%- if emoji is True %}
+                  <span class="bikes">{{ graph(indego_station['bikesAvailable'], '🚲 ') }}</span>
+                  <span class="docks">{{ graph(indego_station['docksAvailable'], '-') }}</span>
+                {%- else %}
+                  <span class="bikes">{{ graph(indego_station['bikesAvailable']) }}</span>
+                  <span class="docks">{{ graph(indego_station['docksAvailable']) }}</span>
+                {%- endif %}
+                </td>
                 <td>{{ indego_station['docksAvailable'] }}</td>
                 <td class="graphcol"><a target="popup" onclick="window.open('{{ url_for('chart_station', chart_string=indego_kiosk_id) }}','popup','width=800,height=500'); return false;">📊</a></td>
             </tr>
