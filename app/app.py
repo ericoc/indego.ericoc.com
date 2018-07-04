@@ -25,8 +25,8 @@ def fetch_chart_data(fetch_data_id):
     chart_db = _mysql.connect(host=db_creds.db_creds['host'], user=db_creds.db_creds['user'], passwd=db_creds.db_creds['passwd'], db=db_creds.db_creds['db'])
     chart_db.query(fetch_data_query)
     chart_db_result = chart_db.store_result().fetch_row(how=1, maxrows=0)
-    chart_db = None;
-    return chart_db_result;
+    chart_db = None
+    return chart_db_result
 
 
 @app.route('/')
