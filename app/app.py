@@ -8,7 +8,7 @@ app = Flask(__name__)
 
 def find_stations(search=None):
 
-    if search:
+    if search and not isinstance(search, int):
         search = re.sub(r'[^a-zA-Z0-9\&\,\. ]', '', search)
 
     indego = Indego()
@@ -18,15 +18,21 @@ def find_stations(search=None):
 
 def fetch_chart_data(fetch_data_id):
 
-    if not fetch_data_id or not len(fetch_data_id) == 4 or not find_stations(fetch_data_id):
+    if not fetch_data_id or not isinstance(fetch_data_id, int) or not find_stations(fetch_data_id):
         return None
 
-    fetch_data_query = f"SELECT UNIX_TIMESTAMP(`added`)*1000 AS `added`, `bikesAvailable` FROM `data` WHERE `kioskId` = {fetch_data_id} AND `added` > NOW() - INTERVAL 1 MONTH ORDER BY `added` ASC;"
-    chart_db = _mysql.connect(host=db_creds.db_creds['host'], user=db_creds.db_creds['user'], passwd=db_creds.db_creds['passwd'], db=db_creds.db_creds['db'])
-    chart_db.query(fetch_data_query)
-    chart_db_result = chart_db.store_result().fetch_row(how=1, maxrows=0)
-    chart_db = None
-    return chart_db_result
+    try:
+
+        fetch_data_query = f"SELECT UNIX_TIMESTAMP(`added`)*1000 AS `added`, `bikesAvailable` FROM `data` WHERE `kioskId` = {fetch_data_id} AND `added` > NOW() - INTERVAL 1 MONTH ORDER BY `added` ASC;"
+        chart_db = _mysql.connect(host=db_creds.db_creds['host'], user=db_creds.db_creds['user'], passwd=db_creds.db_creds['passwd'], db=db_creds.db_creds['db'])
+        chart_db.query(fetch_data_query)
+        chart_db_result = chart_db.store_result().fetch_row(how=1, maxrows=0)
+        chart_db = None
+
+        return chart_db_result
+
+    except Exception:
+        return None
 
 
 @app.route('/')
@@ -79,17 +85,14 @@ def chartjs_station(chartjs_id=None):
     return chartjs_response
 
 
-@app.route('/chartdata/<chartdata_id>')
+@app.route('/chartdata/<int:chartdata_id>')
 def chartdata_station(chartdata_id=None):
 
-    if not chartdata_id or not len(chartdata_id) == 4:
-        chartdata_result = None
-    else:
-        chartdata_result = find_stations(chartdata_id)
+    chartdata_result = find_stations(chartdata_id)
+    chartdata_station = list(chartdata_result.values())
+    chart_data = fetch_chart_data(chartdata_id)
 
-    if chartdata_result:
-        chartdata_station = list(chartdata_result.values())
-        chart_data = fetch_chart_data(chartdata_id)
+    if chart_data and len(chart_data) > 1:
         code = 200
     else:
         chartdata_station = None
