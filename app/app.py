@@ -11,11 +11,7 @@ def find_stations(search=None):
 
     indego = Indego()
     station_results = indego.get_stations(search)
-
-    if station_results and len(station_results) >= 1:
-        return station_results
-    else:
-        return None
+    return station_results
 
 
 def fetch_chart_data(fetch_data_id):
