@@ -9,7 +9,7 @@ app = Flask(__name__)
 def find_stations(search=None):
 
     if search:
-        search = re.sub(r'[^a-zA-Z0-9 ]', '', search)
+        search = re.sub(r'[^a-zA-Z0-9\&\,\. ]', '', search)
 
     indego = Indego()
     station_results = indego.get_stations(search)
