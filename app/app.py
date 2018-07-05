@@ -2,12 +2,14 @@ from flask import Flask, render_template, send_from_directory, request, make_res
 from indego import Indego
 import _mysql
 import db_creds
+import re
 
 app = Flask(__name__)
 
 def find_stations(search=None):
 
-    search = re.sub(r'[^a-zA-Z0-9 ]', '', search)
+    if search:
+        search = re.sub(r'[^a-zA-Z0-9 ]', '', search)
 
     indego = Indego()
     station_results = indego.get_stations(search)
@@ -19,7 +21,7 @@ def fetch_chart_data(fetch_data_id):
     if not fetch_data_id or not len(fetch_data_id) == 4 or not find_stations(fetch_data_id):
         return None
 
-    fetch_data_query = "SELECT UNIX_TIMESTAMP(`added`)*1000 AS `added`, `bikesAvailable` FROM `data` WHERE `kioskId` = " + fetch_data_id + " AND `added` > NOW() - INTERVAL 1 MONTH ORDER BY `added` ASC;"
+    fetch_data_query = f"SELECT UNIX_TIMESTAMP(`added`)*1000 AS `added`, `bikesAvailable` FROM `data` WHERE `kioskId` = {fetch_data_id} AND `added` > NOW() - INTERVAL 1 MONTH ORDER BY `added` ASC;"
     chart_db = _mysql.connect(host=db_creds.db_creds['host'], user=db_creds.db_creds['user'], passwd=db_creds.db_creds['passwd'], db=db_creds.db_creds['db'])
     chart_db.query(fetch_data_query)
     chart_db_result = chart_db.store_result().fetch_row(how=1, maxrows=0)
