@@ -99,10 +99,10 @@ def chartdata_station(chartdata_id=None):
         chart_data = None
         code = 404
 
-    chartdata_response = render_template('chartdata.js.j2', chartdata_station=chartdata_station, chart_data=chart_data), code
-    response = make_response(chartdata_response)
-    response.headers['Content-Type'] = 'text/javascript'
-    return response
+    chartdata_template = render_template('chartdata.js.j2', chartdata_station=chartdata_station, chart_data=chart_data), code
+    chartdata_response = make_response(chartdata_template)
+    chartdata_response.headers['Content-Type'] = 'text/javascript'
+    return chartdata_response
 
 
 @app.route('/favicon.ico')
