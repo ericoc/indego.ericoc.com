@@ -16,7 +16,7 @@ def find_stations(search=None):
     return station_results
 
 
-def fetch_chart_data(fetch_data_id):
+def fetch_chart_data(fetch_data_id=None):
 
     if not fetch_data_id or not isinstance(fetch_data_id, int) or not find_stations(fetch_data_id):
         return None
