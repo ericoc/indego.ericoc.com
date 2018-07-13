@@ -49,7 +49,7 @@
                 {%- endif %}
                 </td>
                 <td>{{ indego_station['docksAvailable'] }}</td>
-                <td class="graphcol"><a target="popup" onclick="window.open('{{ url_for('chart_station', chart_string=indego_kiosk_id) }}','popup','width=800,height=500'); return false;">📊</a></td>
+                <td class="graphcol"><a href="#{{ indego_kiosk_id }}" target="popup" onclick="window.open('{{ url_for('chart_station', chart_string=indego_kiosk_id) }}','popup','width=800,height=500'); return false;">📊</a></td>
             </tr>
               {%- endfor %}
 
