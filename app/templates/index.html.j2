@@ -39,7 +39,7 @@
 
             <tr id="{{ indego_kiosk_id }}">
                 <td><a href="#{{ indego_kiosk_id }}">{{ indego_kiosk_id }}</a></td>
-                <td><span title="{{ indego_station['name'] }} ({{ indego_station['addressZipCode'] }})">{{ indego_station['name'] }}</span></td>
+                <td><span title="{{ indego_station['addressStreet'] }} ({{ indego_station['addressZipCode'] }})">{{ indego_station['name'] }}</span></td>
                 <td>{{ indego_station['bikesAvailable'] }}</td>
                 <td>
                 {%- if emoji %}
