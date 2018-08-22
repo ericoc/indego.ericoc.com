@@ -34,7 +34,7 @@
               {%- endif -%}
             {%- endmacro %}
 
-            {%- if indego_stations is defined and indego_stations != None and indego_stations|length > 0 %}
+            {%- if indego_stations is defined and indego_stations != None and indego_stations is iterable and indego_stations|length > 0 %}
               {%- for indego_kiosk_id, indego_station in indego_stations.items() %}
 
             <tr id="{{ indego_kiosk_id }}">
