@@ -105,7 +105,6 @@ def chartdata_station(chartdata_id=None):
     return chartdata_response
 
 
-@app.route('/favicon.ico')
 @app.route('/icon.png')
 def static_from_root():
     return send_from_directory(app.static_folder, request.path[1:])

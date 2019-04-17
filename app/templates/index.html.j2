@@ -3,9 +3,18 @@
 
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <link href="/static/indego.css" rel="stylesheet" type="text/css">
-        <link rel="shortcut icon" href="/static/favicon.ico">
-        <link rel="apple-touch-icon" href="/static/icon.png">
+        <meta name="author" content="Eric O'Callaghan">
+        <meta name="description" content="Philadelphia Indego Bikes">
+        <meta name="keywords" content="ericoc, indego, philadelphia, philly, bikes, bikeshare, bicycles">
+        <meta property="og:type" content="website">
+        <meta property="og:site_name" content="Philadelphia Indego Bikes">
+        <meta property="og:title" content="Indego Bicycle Stations">
+        <meta property="og:description" content="A quick and easy way to see available bicycles and docks throughout all Philadlephia Indego bicycle-share stations.">
+        <meta property="og:url" content="{{ url_for('index', _external=True) }}">
+        <meta property="og:image" content="{{ url_for('static', filename='icon.png', _external=True) }}">
+        <link href="{{ url_for('static', filename='indego.css') }}" rel="stylesheet" type="text/css">
+        <link rel="shortcut icon" href="{{ url_for('static', filename='icon.png') }}">
+        <link rel="apple-touch-icon" href="{{ url_for('static', filename='icon.png') }}">
         <title>Indego Bikes!</title>
     </head>
 
