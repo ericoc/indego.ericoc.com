@@ -1,10 +1,10 @@
-indegopy.ericoc.com
+indego.ericoc.com
 ==============================
 
 About
 -----
 
-I previously created https://indegophp.ericoc.com/ in PHP and I have tried to replicate it here using Python.
+I previously created [a similar website in PHP](https://github.com/ericoc/indegophp.ericoc.com) and I have tried to replicate it here using Python.
 
 I previously made [this Python library](https://github.com/ericoc/indego-py-lib) for the Philadelphia Indego bike-share program to familiarize myself with Python for the first time.
 
