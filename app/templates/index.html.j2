@@ -68,7 +68,7 @@
             </tr>
             {%- endif %}
 
-            <tr class="header">
+            <tr class="footer">
                 <td>Totals</td>
                 <td>{{ indego_stations | length }} station{%- if indego_stations | length != 1 -%}s{%- endif -%}</td>
                 <td>{{ indego_stations.values() | sum(attribute='bikesAvailable') }}</td>
@@ -77,10 +77,10 @@
                 <td></td>
             </tr>
 
-        </table><br>
+        </table>
 
-        <pre>courtesy of <a href="https://www.rideindego.com/" target="_blank">Indego</a></pre><br>
-        <pre><a href="https://github.com/ericoc/indego.ericoc.com/" target="_blank">view source @ github</a> | <a href="https://github.com/ericoc/indego-py-lib/" target="_blank">my Indego Python library</a></pre>
+        <p>courtesy of <a href="https://www.rideindego.com/" target="_blank">Indego</a></p>
+        <p><a href="https://github.com/ericoc/indego.ericoc.com/" target="_blank">view source @ github</a> | <a href="https://github.com/ericoc/indego-py-lib/" target="_blank">my Indego Python library</a></p>
 
     </body>
 

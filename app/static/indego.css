@@ -1,7 +1,23 @@
+body {
+    font-family:    Arial, Helvetica, sans-serif;
+}
+
 .header {
-    font-weight:    bold;
-    border:         1px solid #000;
-    font-family:    Tahoma, sans-serif;
+    font-weight:        bold;
+    background-color:   #fff;
+    color:              #16216a;
+    border-color:       #000;
+    border-style:       solid;
+    border-width:       0px 0px 1px 0px;
+}
+
+.footer {
+    font-weight:        bold;
+    background-color:   #fff;
+    color:              #16216a;
+    border-color:       #000;
+    border-style:       solid;
+    border-width:       1px 0px 0px 0px;
 }
 
 .graphcol {
@@ -14,9 +30,11 @@
     margin:     0 auto;
 }
 
-table, tr, td {
+table {
     border-collapse:    collapse;
-    border:             1px dotted #000;
+    border-color:       #000;
+    border-style:       solid;
+    border-width:       1px 1px 1px 1px;
 }
 
 tr:nth-child(2n) {
@@ -24,19 +42,27 @@ tr:nth-child(2n) {
 }
 
 tr:target {
-    background-color:   orange;
+    background-color:   #94d60a;
 }
 
 .bikes {
-    color:  #16216a;
+    color:          #0082cb;
+    font-size:      0.75em;
+    border-color:   #000;
+    border-style:   solid;
+    border-width:   3px 0px 3px 3px;
 }
 
 .docks {
-    color:  #777;
+    color:          #fff;
+    font-size:      0.75em;
+    border-color:   #000;
+    border-style:   solid;
+    border-width:   3px 3px 3px 0px;
 }
 
 .inactive {
-    background-color:   yellow;
+    background-color:   orange;
 }
 
 h1 {
