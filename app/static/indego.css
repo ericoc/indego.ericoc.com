@@ -35,6 +35,10 @@ tr:target {
     color:  #777;
 }
 
+.inactive {
+    background-color: yellow;
+}
+
 h1 {
     color:              #16216a;
     text-decoration:    underline;

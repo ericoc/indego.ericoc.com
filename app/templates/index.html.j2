@@ -47,8 +47,8 @@
               {%- for indego_kiosk_id, indego_station in indego_stations.items() %}
 
             <tr id="{{ indego_kiosk_id }}">
-                <td><a href="#{{ indego_kiosk_id }}">{{ indego_kiosk_id }}</a></td>
-                <td><span title="{{ indego_station['addressStreet'] }} ({{ indego_station['addressZipCode'] }})">{{ indego_station['name'] }}</span></td>
+                <td{% if indego_station['kioskConnectionStatus'] != 'Active' %} class="inactive"{% endif %}><a href="#{{ indego_kiosk_id }}">{{ indego_kiosk_id }}</a></td>
+                <td><span title="{{ indego_station['addressStreet'] }} ({{ indego_station['addressZipCode'] }})">{{ indego_station['name'] }}{% if indego_station['kioskConnectionStatus'] != 'Active' %} ({{ indego_station['kioskConnectionStatus'] }}){% endif %}</span></td>
                 <td>{{ indego_station['bikesAvailable'] }}</td>
                 <td>
                 {%- if emoji %}
