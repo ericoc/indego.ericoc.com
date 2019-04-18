@@ -18,6 +18,7 @@ Historical Data
 In any case, I have been running [this PHP script](https://github.com/ericoc/indegophp.ericoc.com/blob/master/backend/db_insert.php) on my personal server every 10 minutes for a few years. It has been collecting data from the Philadelphia Indego bike-share API and storing it in a MySQL database. I can tell you how many bikes and empty docks were at each bike-share station in Philadelphia (at 10-minute intervals, anyways) since some time in November of 2015.
 
 ~~As of August 2018, I have a total of approximately 15.2 million rows or ~900MB of MySQL data (`.ibd` file size).~~
+
 ~~For the station closest to my apartment, I have approximately 140,000 records.~~
 
 As of mid-April 2019, I have a total of approximately 19.6 million rows or ~1.2GB of MySQL data (`.ibd` file size).
