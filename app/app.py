@@ -42,7 +42,14 @@ def index(search_string=None, emoji=False):
         if request.headers['Host'] == 'xn--h78h.ericoc.com' or request.headers['Host'] == 'xn--h78h.ericoc.com.':
             emoji = True
 
-    return render_template('index.html.j2', indego_stations=find_stations(search_string), emoji=emoji)
+    indego_stations = find_stations(search_string)
+
+    if indego_stations and len(indego_stations) > 0:
+        code = 200
+    else:
+        code = 404
+
+    return render_template('index.html.j2', indego_stations, emoji=emoji), code
 
 @app.route('/search/<search_string>')
 def search_stations(search_string=None):
@@ -92,7 +99,7 @@ def chartdata_station(chartdata_id=None):
     chartdata_station = list(chartdata_result.values())
     chart_data = fetch_chart_data(chartdata_id)
 
-    if chart_data and len(chart_data) > 1:
+    if chart_data and len(chart_data) > 0:
         code = 200
     else:
         chartdata_station = None
