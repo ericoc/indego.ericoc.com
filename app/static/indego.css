@@ -2,7 +2,23 @@ body {
     font-family:    Arial, Helvetica, sans-serif;
 }
 
-.header {
+a:link {
+    color:  #0082cb;
+}
+
+a:visited {
+    color:  #16216a;
+}
+
+a:hover {
+    color:  orange;
+}
+
+a:active {
+    color:  #94d60a;
+}
+
+.header, .header td {
     font-weight:        bold;
     background-color:   #fff;
     color:              #16216a;
@@ -11,7 +27,7 @@ body {
     border-width:       0px 0px 1px 0px;
 }
 
-.footer {
+.footer, .footer td {
     font-weight:        bold;
     background-color:   #fff;
     color:              #16216a;
