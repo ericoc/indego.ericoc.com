@@ -49,7 +49,7 @@ def index(search_string=None, emoji=False):
     else:
         code = 404
 
-    return render_template('index.html.j2', indego_stations, emoji=emoji), code
+    return render_template('index.html.j2', indego_stations=indego_stations, emoji=emoji), code
 
 @app.route('/search/<search_string>')
 def search_stations(search_string=None):
