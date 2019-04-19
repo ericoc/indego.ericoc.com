@@ -37,11 +37,19 @@
                 <td>History</td>
             </tr>
 
-            {%- macro graph(count, character='█') %}
+            {%- macro graph(count, character) %}
               {%- if count > 0 -%}
                 {%- for item in range(count) -%}{{ character }}{%- endfor -%}
               {%- endif -%}
             {%- endmacro %}
+
+            {%- if emoji %}
+              {%- set bikes_character = '🚲' %}
+              {%- set docks_character = '=' %}
+            {%- else %}
+              {%- set bikes_character = '█' %}
+              {%- set docks_character = '█' %}
+            {%- endif %}
 
             {%- if indego_stations is defined and indego_stations != None and indego_stations is iterable and indego_stations|length > 0 %}
               {%- for indego_kiosk_id, indego_station in indego_stations.items() %}
@@ -50,13 +58,7 @@
                 <td{% if indego_station['kioskConnectionStatus'] != 'Active' %} class="inactive"{% endif %}><a href="#{{ indego_kiosk_id }}">{{ indego_kiosk_id }}</a></td>
                 <td><span title="{{ indego_station['addressStreet'] }} ({{ indego_station['addressZipCode'] }})">{{ indego_station['name'] }}{% if indego_station['kioskConnectionStatus'] != 'Active' %} ({{ indego_station['kioskConnectionStatus'] }}){% endif %}</span></td>
                 <td>{{ indego_station['bikesAvailable'] }}</td>
-                <td>
-                {%- if emoji %}
-                  <span class="bikes">{{ graph(indego_station['bikesAvailable'], '🚲 ') }}</span><span class="docks">{{ graph(indego_station['docksAvailable'], '=') }}</span>
-                {%- else %}
-                  <span class="bikes">{{ graph(indego_station['bikesAvailable']) }}</span><span class="docks">{{ graph(indego_station['docksAvailable']) }}</span>
-                {%- endif %}
-                </td>
+                <td><span class="bikes">{{ graph(indego_station['bikesAvailable'], bikes_character) }}</span><span class="docks">{{ graph(indego_station['docksAvailable'], docks_character) }}</span></td>
                 <td>{{ indego_station['docksAvailable'] }}</td>
                 <td class="graphcol"><a href="#{{ indego_kiosk_id }}" target="popup" onclick="window.open('{{ url_for('chart_station', chart_string=indego_kiosk_id) }}','popup','width=800,height=500'); return false;">📊</a></td>
             </tr>
