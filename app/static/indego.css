@@ -2,8 +2,22 @@ body {
     font-family:    Arial, Helvetica, sans-serif;
 }
 
-.header, .footer {
+.header {
     font-weight:        bold;
+    background-color:   #fff;
+    color:              #16216a;
+    border-color:       #000;
+    border-style:       solid;
+    border-width:       0px 0px 1px 0px;
+}
+
+.footer {
+    font-weight:        bold;
+    background-color:   #fff;
+    color:              #16216a;
+    border-color:       #000;
+    border-style:       solid;
+    border-width:       1px 0px 0px 0px;
 }
 
 .graphcol {
