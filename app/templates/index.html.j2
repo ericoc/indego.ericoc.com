@@ -52,7 +52,7 @@
                 <td>{{ indego_station['bikesAvailable'] }}</td>
                 <td>
                 {%- if emoji %}
-                  <span class="bikes">{{ graph(indego_station['bikesAvailable'], '🚲 ') }}</span><span class="docks">{{ graph(indego_station['docksAvailable'], '-') }}</span>
+                  <span class="bikes">{{ graph(indego_station['bikesAvailable'], '🚲 ') }}</span><span class="docks">{{ graph(indego_station['docksAvailable'], '=') }}</span>
                 {%- else %}
                   <span class="bikes">{{ graph(indego_station['bikesAvailable']) }}</span><span class="docks">{{ graph(indego_station['docksAvailable']) }}</span>
                 {%- endif %}
