@@ -48,17 +48,11 @@ tr:target {
 .bikes {
     color:          #0082cb;
     font-size:      0.75em;
-    border-color:   #000;
-    border-style:   solid;
-    border-width:   3px 0px 3px 3px;
 }
 
 .docks {
-    color:          #fff;
+    color:          #ccc;
     font-size:      0.75em;
-    border-color:   #000;
-    border-style:   solid;
-    border-width:   3px 3px 3px 0px;
 }
 
 .inactive {
