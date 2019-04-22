@@ -24,7 +24,7 @@ a:active {
     color:              #16216a;
     border-color:       #000;
     border-style:       solid;
-    border-width:       0px 0px 1px 0px;
+    border-width:       1px 1px 1px 1px;
 }
 
 .footer, .footer td {
@@ -33,7 +33,7 @@ a:active {
     color:              #16216a;
     border-color:       #000;
     border-style:       solid;
-    border-width:       1px 0px 0px 0px;
+    border-width:       1px 1px 1px 1px;
 }
 
 .graphcol {
