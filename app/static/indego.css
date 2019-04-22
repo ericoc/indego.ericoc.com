@@ -71,7 +71,7 @@ tr:target {
     font-size:      0.75em;
 }
 
-.inactive {
+.unavailable {
     background-color:   orange;
 }
 
