@@ -51,13 +51,11 @@
               {%- set docks_character = '█' %}
             {%- endif %}
 
-            {%- set inactive_stations = 0 -%}
-
             {%- if indego_stations is defined and indego_stations != None and indego_stations is iterable and indego_stations|length > 0 %}
               {%- for indego_kiosk_id, indego_station in indego_stations.items() %}
 
             <tr id="{{ indego_kiosk_id }}">
-                <td{% if indego_station['kioskConnectionStatus'] != 'Active' %} class="inactive"{% set inactive_stations = inactive_stations + 1 %}{% endif %}><a href="#{{ indego_kiosk_id }}">{{ indego_kiosk_id }}</a></td>
+                <td{% if indego_station['kioskConnectionStatus'] != 'Active' %} class="inactive"{% endif %}><a href="#{{ indego_kiosk_id }}">{{ indego_kiosk_id }}</a></td>
                 <td><span title="{{ indego_station['addressStreet'] }} ({{ indego_station['addressZipCode'] }})">{{ indego_station['name'] }}{% if indego_station['kioskConnectionStatus'] != 'Active' %} ({{ indego_station['kioskConnectionStatus'] }}){% endif %}</span></td>
                 <td>{{ indego_station['bikesAvailable'] }}</td>
                 <td><span class="bikes">{{ graph(indego_station['bikesAvailable'], bikes_character) }}</span><span class="docks">{{ graph(indego_station['docksAvailable'], docks_character) }}</span></td>
@@ -74,7 +72,7 @@
 
             <tr class="footer">
                 <td>Totals</td>
-                <td>{{ indego_stations | length }} station{%- if indego_stations | length != 1 -%}s{%- endif -%}{%- if inactive_stations > 0 -%}({{ inactive_stations }} inactive){%- endif -%}</td>
+                <td>{{ indego_stations | length }} station{%- if indego_stations | length != 1 -%}s{%- endif -%}</td>
                 <td>{{ indego_stations.values() | sum(attribute='bikesAvailable') }}</td>
                 <td></td>
                 <td>{{ indego_stations.values() | sum(attribute='docksAvailable') }}</td>
