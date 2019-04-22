@@ -51,9 +51,9 @@
               {%- set docks_character = '█' %}
             {%- endif %}
 
-            {%- if indego_stations is defined and indego_stations != None and indego_stations is iterable and indego_stations|length > 0 %}
+            {%- set inactive_stations = indego_stations.values() | selectattr('kioskPublicStatus', '!=', 'Active') | list | length %}
 
-              {%- set inactive_stations = indego_stations.values() | selectattr('kioskPublicStatus', '!=', 'Active') | list | length %}
+            {%- if indego_stations is defined and indego_stations != None and indego_stations is iterable and indego_stations|length > 0 %}
 
               {%- for indego_kiosk_id, indego_station in indego_stations.items() %}
 
