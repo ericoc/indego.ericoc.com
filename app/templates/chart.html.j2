@@ -22,7 +22,7 @@
       {%- for chart_station in chart_stations %}
         <script src="{{ url_for('chartdata_station', chartdata_id=chart_station['kioskId']) }}"></script>
       {%- endfor %}
-        <script type="text/javascript" src="/chartjs/{{ chart_string | safe }}"></script>
+        <script src="{{ url_for('chartjs_station', chartjs_id=chart_string) }}"></script>
     {%- endif %}
     </head>
     <body>
