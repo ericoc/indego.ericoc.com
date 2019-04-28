@@ -9,7 +9,7 @@ try:
     dbh = pymysql.connect(host=db_creds_rw.db_creds_rw['host'], user=db_creds_rw.db_creds_rw['user'], passwd=db_creds_rw.db_creds_rw['passwd'], db=db_creds_rw.db_creds_rw['db'])
 
     indego = Indego()
-    indego_stations = indego.get_stations('')
+    indego_stations = indego.get_stations()
 
     with dbh.cursor() as dbc:
 
