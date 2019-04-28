@@ -2,7 +2,7 @@
 var data_{{ chartdata_station[0]['kioskId'] }} = ([
  {%- if chart_data and chart_data is iterable -%}
   {%- for data_point in chart_data %}
-    [{{ data_point['added'] }}, {{ data_point['bikesAvailable'] }}]
+    [{{ data_point[0] }}, {{ data_point[1] }}]
     {%- if not loop.last -%},{%- endif -%}
   {%- endfor %}
  {%- else -%}

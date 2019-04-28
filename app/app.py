@@ -1,7 +1,7 @@
 from flask import Flask, render_template, send_from_directory, request, make_response, url_for, redirect
 from indego import Indego
-import _mysql
-import db_creds
+import pymysql
+import db_creds_ro
 import re
 
 app = Flask(__name__)
@@ -23,12 +23,14 @@ def fetch_chart_data(fetch_data_id=None):
 
     try:
 
-        fetch_data_query = f"SELECT UNIX_TIMESTAMP(`added`)*1000 AS `added`, `bikesAvailable` FROM `data` WHERE `kioskId` = {fetch_data_id} AND `added` > NOW() - INTERVAL 1 MONTH ORDER BY `added` ASC;"
-        chart_db = _mysql.connect(host=db_creds.db_creds['host'], user=db_creds.db_creds['user'], passwd=db_creds.db_creds['passwd'], db=db_creds.db_creds['db'])
-        chart_db.query(fetch_data_query)
-        chart_db_result = chart_db.store_result().fetch_row(how=1, maxrows=0)
-        chart_db = None
+        fetch_data_query = "SELECT UNIX_TIMESTAMP(`added`)*1000 AS `added`, `bikesAvailable` FROM `data` WHERE `kioskId` = %s AND `added` > NOW() - INTERVAL 1 MONTH ORDER BY `added` ASC"
+        chart_dbh = pymysql.connect(host=db_creds_ro.db_creds_ro['host'], user=db_creds_ro.db_creds_ro['user'], passwd=db_creds_ro.db_creds_ro['passwd'], db=db_creds_ro.db_creds_ro['db'])
 
+        with chart_dbh.cursor() as chart_dbc:
+            chart_dbc.execute(fetch_data_query, (fetch_data_id))
+            chart_db_result = chart_dbc.fetchall()
+
+        chart_dbh.close()
         return chart_db_result
 
     except Exception:
