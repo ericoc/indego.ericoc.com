@@ -1,7 +1,8 @@
 __pycache__
 venv/
-db_creds.py
+db_creds*.py
 *.gz
+*.log
 *.pyc
 *.save
 *.sh
