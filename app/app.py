@@ -22,7 +22,7 @@ def fetch_chart_data(fetch_data_id=None):
 
     try:
 
-        fetch_data_query = """SELECT EXTRACT(EPOCH FROM added)::integer "added",  station->'properties'->'bikesAvailable' "bikesAvailable" FROM indego, jsonb_array_elements(data->'features') station WHERE station->'properties'->>'kioskId' = '%s' AND added > NOW() - INTERVAL '1 MONTH';"""
+        fetch_data_query = """SELECT EXTRACT(EPOCH FROM added)*1000 "added",  station->'properties'->'bikesAvailable' "bikesAvailable" FROM indego, jsonb_array_elements(data->'features') station WHERE station->'properties'->>'kioskId' = '%s' AND added > NOW() - INTERVAL '1 MONTH';"""
         chart_dbh = psycopg2.connect(host=db_creds_ro.db_creds_ro['host'], user=db_creds_ro.db_creds_ro['user'], password=db_creds_ro.db_creds_ro['passwd'], database=db_creds_ro.db_creds_ro['db'])
 
         with chart_dbh.cursor() as chart_dbc:
