@@ -31,6 +31,8 @@ For the station closest to my first Philadelphia apartment, I have approximately
     root@ericoc:~# du -hs /var/lib/mysql/indego/data.ibd
     1.2G    /var/lib/mysql/indego/data.ibd
 
+As of May 2019, I switched to begin storing data in PostgreSQL [via this Python script](app/psql_insert.py). PostgreSQL made it much easier to just simply store JSON so it now powers the historical charts on the website as well.
+
 Charts
 ------
 
