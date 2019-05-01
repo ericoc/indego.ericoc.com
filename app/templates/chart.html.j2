@@ -23,7 +23,7 @@
       {%- for chart_station in chart_stations %}
         <script src="{{ url_for('chartdata_station', chartdata_id=chart_station['kioskId']) }}"></script>
       {%- endfor %}
-        <script src="{{ url_for('chartjs_station', chartjs_id=chart_string) }}"></script>
+        <script src="{{ url_for('chartjs_station', chartjs_string=chart_string) }}"></script>
     {%- endif %}
     </head>
     <body>
