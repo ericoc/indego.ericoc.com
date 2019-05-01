@@ -8,13 +8,7 @@ import psycopg2
 try:
 
     # Connect to PostgreSQL (with read-write credentials)
-    dbh = psycopg2.connect(
-                            user='indego',
-                            password=db_creds_rw.db_creds_rw['passwd'],
-                            host='localhost',
-                            port='5432',
-                            database='indego'
-                          )
+    dbh = psycopg2.connect(user='indego', password=db_creds_rw.db_creds_rw['passwd'], host='localhost', port='5432', database='indego')
 
     # Get all Indego stations from the API (but as raw JSON, so not using the library I made...)
     url = 'https://www.rideindego.com/stations/json/'
@@ -32,9 +26,9 @@ try:
     add_data_query = "INSERT INTO indego (added, data) VALUES (NOW(), %s)"
     dbc.execute(add_data_query, (insert_data,))
     dbh.commit()
-    count = dbc.rowcount
 
     # Show number of records successfully inserted (should always be 1)
+    count = dbc.rowcount
     print(count, 'record inserted successfully')
 
     # End database cursor and close the PostgreSQL connection

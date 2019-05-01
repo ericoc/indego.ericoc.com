@@ -1,6 +1,7 @@
 from flask import Flask, render_template, send_from_directory, request, make_response, url_for, redirect
 from indego import Indego
 import pymysql
+import psycopg2
 import db_creds_ro
 import re
 
@@ -25,6 +26,27 @@ def fetch_chart_data(fetch_data_id=None):
 
         fetch_data_query = "SELECT UNIX_TIMESTAMP(`added`)*1000 AS `added`, `bikesAvailable` FROM `data` WHERE `kioskId` = %s AND `added` > NOW() - INTERVAL 1 MONTH ORDER BY `added` ASC"
         chart_dbh = pymysql.connect(host=db_creds_ro.db_creds_ro['host'], user=db_creds_ro.db_creds_ro['user'], passwd=db_creds_ro.db_creds_ro['passwd'], db=db_creds_ro.db_creds_ro['db'])
+
+        with chart_dbh.cursor() as chart_dbc:
+            chart_dbc.execute(fetch_data_query, (fetch_data_id))
+            chart_db_result = chart_dbc.fetchall()
+
+        chart_dbh.close()
+        return chart_db_result
+
+    except Exception:
+        return None
+
+
+def fetch_pchart_data(fetch_data_id=None):
+
+    if not fetch_data_id or not isinstance(fetch_data_id, int) or not find_stations(fetch_data_id):
+        return None
+
+    try:
+
+        fetch_data_query = (SELECT EXTRACT(EPOCH FROM added)::integer "added",  station->'properties'->'bikesAvailable' "bikesAvailable" FROM indego, jsonb_array_elements(data->'features') station WHERE station->'properties'->>'kioskId' = %s added > NOW() - INTERVAL '1 MONTH';)
+        chart_dbh = psycopg2.connect(user='indego', password=db_creds_rw.db_creds_rw['passwd'], host='localhost', port='5432', database='indego')
 
         with chart_dbh.cursor() as chart_dbc:
             chart_dbc.execute(fetch_data_query, (fetch_data_id))
@@ -113,6 +135,26 @@ def chartdata_station(chartdata_id=None):
     chartdata_response.headers['Content-Type'] = 'text/javascript'
     return chartdata_response
 
+@app.route('/pchartdata/<int:chartdata_id>')
+def pchartdata_station(chartdata_id=None):
+
+    chartdata_result = find_stations(chartdata_id)
+    chartdata_station = list(chartdata_result.values())
+    chart_data = fetch_pchart_data(chartdata_id)
+
+    print(chart_data)
+
+    if chart_data and len(chart_data) > 0:
+        code = 200
+    else:
+        chartdata_station = None
+        chart_data = None
+        code = 404
+
+    chartdata_template = render_template('chartdata.js.j2', chartdata_station=chartdata_station, chart_data=chart_data), code
+    chartdata_response = make_response(chartdata_template)
+    chartdata_response.headers['Content-Type'] = 'text/javascript'
+    return chartdata_response
 
 @app.route('/icon.png')
 def static_from_root():
