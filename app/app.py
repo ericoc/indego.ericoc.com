@@ -34,7 +34,7 @@ def fetch_chart_data(fetch_data_id=None):
         chart_dbh.close()
         return chart_db_result
 
-    except Exception:
+    except:
         return None
 
 
@@ -45,17 +45,17 @@ def fetch_pchart_data(fetch_data_id=None):
 
     try:
 
-        fetch_data_query = (SELECT EXTRACT(EPOCH FROM added)::integer "added",  station->'properties'->'bikesAvailable' "bikesAvailable" FROM indego, jsonb_array_elements(data->'features') station WHERE station->'properties'->>'kioskId' = %s added > NOW() - INTERVAL '1 MONTH';)
-        chart_dbh = psycopg2.connect(user='indego', password=db_creds_rw.db_creds_rw['passwd'], host='localhost', port='5432', database='indego')
+        fetch_data_query = """SELECT EXTRACT(EPOCH FROM added)::integer "added",  station->'properties'->'bikesAvailable' "bikesAvailable" FROM indego, jsonb_array_elements(data->'features') station WHERE station->'properties'->>'kioskId' = '%s' AND added > NOW() - INTERVAL '1 MONTH';"""
+        chart_dbh = psycopg2.connect(host=db_creds_ro.db_creds_ro['host'], user=db_creds_ro.db_creds_ro['user'], password=db_creds_ro.db_creds_ro['passwd'], database=db_creds_ro.db_creds_ro['db'])
 
         with chart_dbh.cursor() as chart_dbc:
-            chart_dbc.execute(fetch_data_query, (fetch_data_id))
+            chart_dbc.execute(fetch_data_query, (fetch_data_id,))
             chart_db_result = chart_dbc.fetchall()
 
         chart_dbh.close()
         return chart_db_result
 
-    except Exception:
+    except:
         return None
 
 
@@ -141,8 +141,6 @@ def pchartdata_station(chartdata_id=None):
     chartdata_result = find_stations(chartdata_id)
     chartdata_station = list(chartdata_result.values())
     chart_data = fetch_pchart_data(chartdata_id)
-
-    print(chart_data)
 
     if chart_data and len(chart_data) > 0:
         code = 200
