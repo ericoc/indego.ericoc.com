@@ -3,7 +3,7 @@ chardet==3.0.4
 Click==7.0
 Flask==1.0.2
 idna==2.8
-indego==1.0.4
+indego==1.0.5
 itsdangerous==1.1.0
 Jinja2==2.10.1
 MarkupSafe==1.1.1
