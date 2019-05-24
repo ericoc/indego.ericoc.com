@@ -63,7 +63,7 @@ Define Flask main page that displays search results and lists stations
 By default, all stations are shown
 However, the search_stations function below refers back to this function when searching for stations
 """
-@app.route('/')
+@app.route('/', methods=['GET'])
 def index(search_string=None, emoji=False):
 
     # Display stations with bicycle emojis when using the punycode URL
@@ -90,23 +90,24 @@ def index(search_string=None, emoji=False):
 Define Flask search route to allow searching stations
 They are then displayed via the index() function and its Jinja2 template
 """
-@app.route('/search/<search_string>')
+@app.route('/search/<path:search_string>', methods=['GET'])
 def search_stations(search_string=None):
     return index(search_string=search_string)
 
 """
-Define Flask route that allows searching via the GET method form on the index pages Jinja2 template
+Define Flask route that allows searching via the POST method search form (on the Jinja2 template index page)
+This simply redirects to /search/<search_query> and handled by the above (search_stations) function which passes it off to the index() function
 """
-@app.route('/search')
+@app.route('/search', methods=['POST'])
 def search_form():
-    return redirect(url_for('search_stations', search_string=request.args.get('search')))
+    return redirect(url_for('search_stations', search_string=request.form['search']))
 
 
 """
 Define Flask route for showing charts of historical bicycle availability for stations
 This is shown within a pop-up generally, visited from the main index page
 """
-@app.route('/chart/<chart_string>')
+@app.route('/chart/<chart_string>', methods=['GET'])
 def chart_station(chart_string=None):
 
     # Find stations based on route search string
@@ -129,7 +130,7 @@ def chart_station(chart_string=None):
 """
 Define Flask route for the front-end JavaScript necessary for charts
 """
-@app.route('/chartjs/<chartjs_string>')
+@app.route('/chartjs/<chartjs_string>', methods=['GET'])
 def chartjs_station(chartjs_string=None):
 
     # Find stations based on route search string
@@ -160,7 +161,7 @@ def chartjs_station(chartjs_string=None):
 """
 Define Flask route for generating the JavaScript using PostgreSQL data for charts
 """
-@app.route('/chartdata/<int:chartdata_id>')
+@app.route('/chartdata/<int:chartdata_id>', methods=['GET'])
 def chartdata_station(chartdata_id=None):
 
     # Find single station based on route kioskId (cannot be a string)
@@ -197,7 +198,7 @@ def chartdata_station(chartdata_id=None):
 """
 Define Flask function to serve some static content
 """
-@app.route('/icon.png')
+@app.route('/icon.png', methods=['GET'])
 def static_from_root():
     return send_from_directory(app.static_folder, request.path[1:])
 
