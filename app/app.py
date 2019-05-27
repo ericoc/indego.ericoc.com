@@ -59,17 +59,16 @@ def fetch_chart_data(fetch_data_id=None):
 
 
 """
-Define Flask main page that displays search results and lists stations
+Define primary route that displays search results and lists stations
 By default, all stations are shown
-However, the search_stations function below refers back to this function when searching for stations
+The search_stations function below refers back to this function when searching for stations
 """
 @app.route('/', methods=['GET'])
 def index(search_string=None, emoji=False):
 
     # Display stations with bicycle emojis when using the punycode URL
-    if request.headers['Host']:
-        if request.headers['Host'] == 'xn--h78h.ericoc.com' or request.headers['Host'] == 'xn--h78h.ericoc.com.':
-            emoji = True
+    if request.headers['Host'] and 'xn--h78h' in request.headers['Host']:
+        emoji = True
 
     # Get which ever stations and all of their information so that they can be displayed
     indego_stations = find_stations(search_string)
@@ -105,7 +104,7 @@ def search_form():
 
 """
 Define Flask route for showing charts of historical bicycle availability for stations
-This is shown within a pop-up generally, visited from the main index page
+This is usually shown within a pop-up, from the main index page
 """
 @app.route('/chart/<chart_string>', methods=['GET'])
 def chart_station(chart_string=None):
@@ -148,9 +147,8 @@ def chartjs_station(chartjs_string=None):
 
     """
     Render the chartjs Jinja2 template as JavaScript
-    This route is generally only visited with a station kioskID from visitors on the main index page
-    However, it can be called with a string to show multiple stations
-    ...in which case each station found will have its own chart on one page (which can be resource-intensive with many stations)
+    This route is usually only included from the /chart/ route with a station kioskID in a pop-up from the main page
+    This can be called with a string to show multiple stations (each station found will have its own chart on one page, which can be resource-intensive with many stations)
     """
     chartjs_template = render_template('chart.js.j2', chartjs_stations=chartjs_stations), code
     chartjs_response = make_response(chartjs_template)
@@ -172,7 +170,6 @@ def chartdata_station(chartdata_id=None):
 
     # Fetch the stations historical data from PostgreSQL
     chart_data = fetch_chart_data(chartdata_id)
-
 
     # Respond using a 200 if the one station was found and has historical data
     if chartdata_result and len(chartdata_result) == 1 and chart_data and len(chart_data) > 0:
