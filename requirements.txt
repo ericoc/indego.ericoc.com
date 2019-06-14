@@ -10,7 +10,7 @@ MarkupSafe==1.1.1
 pkg-resources==0.0.0
 pprint==0.1
 protobuf==3.8.0
-psycopg2-binary==2.8.2
+psycopg2-binary==2.8.3
 PyMySQL==0.9.3
 requests==2.22.0
 six==1.12.0
