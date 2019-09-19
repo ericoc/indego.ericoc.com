@@ -1,7 +1,7 @@
-certifi==2019.6.16
+certifi==2019.9.11
 chardet==3.0.4
 Click==7.0
-Flask==1.0.3
+Flask==1.1.1
 idna==2.8
 indego==1.1.0
 itsdangerous==1.1.0
@@ -9,10 +9,10 @@ Jinja2==2.10.1
 MarkupSafe==1.1.1
 pkg-resources==0.0.0
 pprint==0.1
-protobuf==3.8.0
+protobuf==3.9.1
 psycopg2-binary==2.8.3
 PyMySQL==0.9.3
 requests==2.22.0
 six==1.12.0
-urllib3==1.25.3
-Werkzeug==0.15.4
+urllib3==1.25.4
+Werkzeug==0.16.0
