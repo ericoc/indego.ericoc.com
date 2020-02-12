@@ -159,7 +159,7 @@ def chartjs_station(chartjs_string=None):
 """
 Define Flask route for generating the JavaScript using PostgreSQL data for charts
 """
-@app.route('/chartdata/<int:chartdata_id>', methods=['GET'])
+@app.route('/chartdata/<int:chartdata_id>.js', methods=['GET'])
 def chartdata_station(chartdata_id=None):
 
     # Find single station based on route kioskId (cannot be a string)
