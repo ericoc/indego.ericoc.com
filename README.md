@@ -1,4 +1,4 @@
-[indego.ericoc.com](indego.ericoc.com)
+indego.ericoc.com
 ======================================
 
 About
