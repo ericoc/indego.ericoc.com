@@ -6,7 +6,6 @@ db_creds*.py
 *.pyc
 *.save
 *.sh
-*.sql
 .*
 *~
 !.gitignore
