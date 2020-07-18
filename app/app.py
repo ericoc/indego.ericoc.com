@@ -1,7 +1,7 @@
 from flask import Flask, render_template, send_from_directory, request, make_response, url_for, redirect
 from indego import Indego
 import psycopg2
-import db_creds_ro
+import db_creds
 import re
 
 """
@@ -40,7 +40,7 @@ def fetch_chart_data(fetch_data_id=None):
         fetch_data_query = """SELECT EXTRACT(EPOCH FROM added)*1000 "when", station->'properties'->'bikesAvailable' "bikesAvailable" FROM indego, jsonb_array_elements(data->'features') station WHERE added > NOW() - INTERVAL '1 MONTH' AND station->'properties'->>'kioskId' = '%s' ORDER BY added ASC;"""
 
         # Connect to the PostgreSQL database with read-only credentials
-        chart_dbh = psycopg2.connect(host=db_creds_ro.db_creds_ro['host'], user=db_creds_ro.db_creds_ro['user'], password=db_creds_ro.db_creds_ro['passwd'], database=db_creds_ro.db_creds_ro['db'])
+        chart_dbh = psycopg2.connect(user='indego', password=db_creds.db_creds['passwd'], host='localhost', port='5432', database='indego')
 
         # Open a database cursor
         with chart_dbh.cursor() as chart_dbc:
