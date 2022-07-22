@@ -3,6 +3,8 @@
 
 ### Database before API
 
+- Make a dbc function
+
 - The index hits the API on every GET right now so it's crazy slow pulling 179(+) stations each time.
 - I created `/new` which is pulling all stations from the database, but I have to make search work with it.
 - I should stop using my `indego-py-lib` and just get all the data from PostgreSQL since I am pulling it every ten (10) minutes anyways.
