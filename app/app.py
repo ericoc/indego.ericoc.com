@@ -1,7 +1,7 @@
 from flask import Flask, render_template, send_from_directory, request, make_response, url_for, redirect
 from indego import Indego
 import psycopg2
-import db_creds
+import db_creds_ro
 import re
 
 """
@@ -40,7 +40,7 @@ def fetch_chart_data(fetch_data_id=None):
         fetch_data_query = """SELECT EXTRACT(EPOCH FROM added)*1000 "when", station->'properties'->'bikesAvailable' "bikesAvailable" FROM indego, jsonb_array_elements(data->'features') station WHERE added > NOW() - INTERVAL '1 MONTH' AND station->'properties'->>'kioskId' = '%s' ORDER BY added ASC;"""
 
         # Connect to the PostgreSQL database with read-only credentials
-        chart_dbh = psycopg2.connect(user='indego', password=db_creds.db_creds['passwd'], host='localhost', port='5432', database='indego')
+        chart_dbh = psycopg2.connect(user='indego', password=db_creds_ro.db_creds['passwd'], host='localhost', port='5432', database='indego')
 
         # Open a database cursor
         with chart_dbh.cursor() as chart_dbc:
@@ -83,6 +83,58 @@ def index(search_string=None, emoji=False):
 
     # Render the Jinja2 template listing which ever stations
     return render_template('index.html.j2', indego_stations=indego_stations, emoji=emoji), code
+
+
+"""
+Define NEW WIP route that displays search results and lists stations, from the database, rather than making a request to the Indego API
+By default, all stations are shown, from the latest JSONB row added to the database that is not NULL
+TODO: Search is broken with this - I need to parse search parameters more sanely some how to make it work right, WIP
+"""
+@app.route('/new', methods=['GET'])
+def new(search_string=None, emoji=False):
+
+    # Display stations with bicycle emojis when using the punycode URL
+    if request.headers['Host'] and 'xn--h78h' in request.headers['Host']:
+        emoji = True
+
+    # Connect to the PostgreSQL database with read-only credentials
+    dbh = psycopg2.connect(user=db_creds_ro.db_creds['user'], password=db_creds_ro.db_creds['passwd'], host='localhost', port='5432', database='indego')
+
+    # Create a query to find the latest database entry that is not null
+    latest_added_query  = """SELECT MAX(added) FROM indego WHERE data IS NOT NULL;"""
+
+    # Create a query to get latest stations API results from the database
+    latest_data_query   = """SELECT station->'properties'->'id' "kioskId", station->'properties' "properties"   \
+                            FROM indego, jsonb_array_elements(indego.data->'features') station  \
+                            WHERE added = %s \
+                            ORDER BY indego.added DESC;"""
+
+    # Open a database cursor
+    with dbh.cursor() as dbc:
+
+        # Get the latest added data time
+        dbc.execute(latest_added_query)
+        latest_added    = dbc.fetchone()
+        added           = latest_added[0]
+
+        # Use the latest added data time to get the latest station data
+        dbc.execute(latest_data_query, (added,))
+        indego_stations = dbc.fetchall()
+
+        # Close the database connection and return the query results
+        dbh.close()
+
+    # Assuming any stations were found, respond using a 200
+    if indego_stations and len(indego_stations) > 0:
+        code = 200
+
+    # If no stations were found, respond using a 404
+    else:
+        code = 404
+        added = datetime.datetime.now()
+
+    # Render the Jinja2 template listing which ever stations
+    return render_template('index.html.j2', indego_stations=dict(indego_stations), added=added, emoji=emoji), code
 
 
 """

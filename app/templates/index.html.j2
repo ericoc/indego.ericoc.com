@@ -84,7 +84,9 @@
             </tr>
 
         </table>
-
+        {%- if added is defined and added != None %}
+        <p><i>as of {{ added | safe }}<i></p>
+        {%- endif %}
         <p>courtesy of <a href="https://www.rideindego.com/" target="_blank">Indego</a></p>
         <p><a href="https://github.com/ericoc/indego.ericoc.com/" target="_blank">view source @ github</a> | my Indego API libraries: <a href="https://github.com/ericoc/indego-py-lib/" target="_blank">python</a> | <a href="https://github.com/ericoc/indego-php-lib/" target="_blank">php</a></p>
 

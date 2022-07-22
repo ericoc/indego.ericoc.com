@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 
 import requests
-import db_creds
+import db_creds_rw
 import psycopg2
 
 # Wrap this whole thing in a big try to catch any and all exceptions
 try:
 
     # Connect to PostgreSQL (with read-write credentials)
-    dbh = psycopg2.connect(user='indego', password=db_creds.db_creds['passwd'], host='localhost', port='5432', database='indego')
+    dbh = psycopg2.connect(user=db_creds_rw.db_creds['user'], password=db_creds_rw.db_creds['passwd'], host='localhost', port='5432', database='indego')
 
     # Get all Indego stations from the API (but as raw JSON, so not using the library I made...)
     url = 'https://www.rideindego.com/stations/json/'
