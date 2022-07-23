@@ -41,7 +41,7 @@ def find_stations(search=None):
         latest_added_query  = """SELECT MAX(added) FROM indego WHERE data IS NOT NULL;"""
 
         # Connect to the database
-        conn = dbc()
+        conn                = dbc()
         with conn.cursor() as cur:
 
             # Get the latest added data time
@@ -138,7 +138,7 @@ def fetch_chart_data(id=None):
                      ORDER BY added ASC;"""
 
         # Connect to the database to get chart data
-        conn = dbc()
+        conn        = dbc()
         with conn.cursor() as cur:
 
             # Execute the query using the stations kioskId that we want availability information for
