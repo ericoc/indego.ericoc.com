@@ -1,28 +1,33 @@
-from flask import Flask, render_template, send_from_directory, request, make_response, url_for, redirect
-from indego import Indego
-import psycopg2
-from psycopg2.extensions import AsIs
-import db_creds_ro
 import re
+import psycopg2
+import db_creds_ro
+from psycopg2.extensions import AsIs
+from flask import Flask, make_response, redirect, render_template, request, send_from_directory, url_for
 
 """
 Initialize Flask app
 """
 app = Flask(__name__)
+app.config.from_pyfile('config.py')
+
 if __name__ == '__main__':
     app.run(debug=True)
 
+# Get database classes
+#import models
+
 """
-Define a function to connect to the PostgreSQL database (using our read-only credentials)
+Define a function to connect to the PostgreSQL database (using read-only credentials)
 """
-def dbc(user=db_creds_ro.db_creds['user'], password=db_creds_ro.db_creds['passwd'], host='127.0.0.1', port=5432, database='indego'):
+def dbc():
     try:
+        import db_creds_ro
         return psycopg2.connect(
-                                user        = user,
-                                password    = password,
-                                host        = host,
-                                port        = port,
-                                database    = database
+                                user        = db_creds_ro.db_creds['username'],
+                                password    = db_creds_ro.db_creds['password'],
+                                host        = '127.0.0.1',
+                                port        = 5432,
+                                database    = 'indego'
                 )
 
     # Print (and return) any exception
@@ -41,7 +46,7 @@ def find_stations(search=None):
         latest_added_query  = """SELECT MAX(added) FROM indego WHERE data IS NOT NULL;"""
 
         # Connect to the database
-        conn                = dbc()
+        conn = dbc()
         with conn.cursor() as cur:
 
             # Get the latest added data time
@@ -78,7 +83,6 @@ def find_stations(search=None):
                                  AND added = %(added)s \
                                  ORDER BY indego.added DESC;"""
                     cur.execute(query, {"search": str(search), "added": added})
-
 
                 else:
 
