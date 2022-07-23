@@ -20,15 +20,15 @@
         <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
         <script src="{{ url_for('static', filename='js/highcharts.js') }}"></script>
         <script src="{{ url_for('static', filename='js/exporting.js') }}"></script>
-      {%- for chart_station in chart_stations %}
-        <script src="{{ url_for('chartdata_station', chartdata_id=chart_station['kioskId']) }}"></script>
+      {%- for kioskId, chart_station in chart_stations %}
+        <script src="{{ url_for('chartdata_station', id=chart_station['kioskId']) }}"></script>
       {%- endfor %}
         <script src="{{ url_for('chartjs_station', chartjs_string=chart_string) }}"></script>
     {%- endif %}
     </head>
     <body>
     {%- if chart_stations is defined and chart_stations is iterable -%}
-      {%- for chart_station in chart_stations %}
+      {%- for kioskId, chart_station in chart_stations %}
         <div id="bikesgraph_{{ chart_station['kioskId'] }}"></div>
         {%- if not loop.last -%}<br>{%- endif -%}
       {%- endfor %}

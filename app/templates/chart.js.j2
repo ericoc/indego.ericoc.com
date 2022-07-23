@@ -1,6 +1,6 @@
 {%- if chartjs_stations and chartjs_stations is iterable -%}
 $(function () {
-  {%- for chartjs_station in chartjs_stations %}
+  {%- for kiosk_id, chartjs_station in chartjs_stations %}
     $('#bikesgraph_{{ chartjs_station['kioskId'] }}').highcharts({
         chart: { zoomType: 'x' },
         title: { text: "Bikes available at {{ chartjs_station['name'] }}" },
