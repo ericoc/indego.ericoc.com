@@ -49,73 +49,80 @@ def find_stations(search=None):
         conn = dbc()
         with conn.cursor() as cur:
 
-            # Get the latest added data time
-            cur.execute(latest_added_query)
+            # Create a query to find the latest database row that is not null, to get the latest added data time
+            added_query     = """SELECT MAX(added) FROM indego WHERE data IS NOT NULL;"""
+            cur.execute(added_query)
             latest_added    = cur.fetchone()
             added           = latest_added[0]
 
-            default_query   = """SELECT station->'properties'->'id' "kioskId", station->'properties' "properties"   \
-                                FROM indego, jsonb_array_elements(indego.data->'features') station  \
-                                WHERE added = %s \
-                                ORDER BY indego.added DESC;"""
-
+            # Use default query if there is no search
             if not search or search == '':
+                default_query   = """SELECT station->'properties'->'id' "kioskId", station->'properties' "properties" \
+                                     FROM indego, jsonb_array_elements(indego.data->'features') station \
+                                     WHERE added = %s \
+                                     ORDER BY indego.added DESC;"""
                 cur.execute(default_query, (added,))
+                return cur.fetchall()
 
-            elif isinstance(search, int) or search.isnumeric():
+            # Search postal/zip code or kiosk/station ID, if the search is numeric
+            if isinstance(search, int) or search.isnumeric():
 
+                # Postal/zip codes are five digits
                 if len(str(search)) == 5:
+                    field           = 'addressZipCode'
+                    numeric_query   = """SELECT station->'properties'->'id' "kioskId", \
+                                         station->'properties' "properties" \
+                                         FROM indego, jsonb_array_elements(indego.data->'features') station \
+                                         WHERE station->'properties'->>'addressZipCode' = %(search)s \
+                                         AND added = %(added)s \
+                                         ORDER BY indego.added DESC;"""
 
-                    query   = """SELECT station->'properties'->'id' "kioskId", \
-                                    station->'properties' "properties" \
-                                 FROM indego, jsonb_array_elements(indego.data->'features') station \
-                                 WHERE station->'properties'->>'addressZipCode' = %(search)s \
-                                 AND added = %(added)s \
-                                 ORDER BY indego.added DESC;"""
-                    cur.execute(query, {"search": str(search), "added": added})
-
+                # Kiosk/station IDs are four digits
                 elif len(str(search)) == 4:
+                    field           = 'kioskId'
+                    numeric_query   = """SELECT station->'properties'->'id' "kioskId", \
+                                         station->'properties' "properties" \
+                                         FROM indego, jsonb_array_elements(indego.data->'features') station \
+                                         WHERE station->'properties'->>'kioskId' = %(search)s \
+                                         AND added = %(added)s \
+                                         ORDER BY indego.added DESC;"""
 
-                    query   = """SELECT station->'properties'->'id' "kioskId", \
-                                    station->'properties' "properties" \
-                                 FROM indego, jsonb_array_elements(indego.data->'features') station \
-                                 WHERE station->'properties'->>'kioskId' = %(search)s \
-                                 AND added = %(added)s \
-                                 ORDER BY indego.added DESC;"""
-                    cur.execute(query, {"search": str(search), "added": added})
-
-                else:
-
-                    search  = re.sub(r'[^a-zA-Z0-9\&\,\. ]', '', search)
-                    query   = """SELECT station->'properties'->'id' "kioskId", \
-                                    station->'properties' "properties" \
-                                 FROM indego, jsonb_array_elements(indego.data->'features') station \
-                                 WHERE ((station->'properties'->>'name' ILIKE '%%%(search)s%%' \
-                                    OR station->'properties'->>'addressStreet' ILIKE '%%%(search)s%%') \
-                                    AND added = %(added)s) \
-                                 ORDER BY indego.added DESC;"""
-                    cur.execute(query, {"search": AsIs(str(search)), "added": added})
-
-            else:
-
-                search  = re.sub(r'[^a-zA-Z0-9\&\,\. ]', '', search)
-                query   = """SELECT station->'properties'->'id' "kioskId", \
-                                station->'properties' "properties" \
+                query   = f"""SELECT station->'properties'->'id' "kioskId", \
+                             station->'properties' "properties" \
                              FROM indego, jsonb_array_elements(indego.data->'features') station \
-                             WHERE ((station->'properties'->>'name' ILIKE '%%%(search)s%%' \
-                                OR station->'properties'->>'addressStreet' ILIKE '%%%(search)s%%') \
-                                AND added = %(added)s) \
+                             WHERE station->'properties'->>'{field}' = '%(search)s' \
+                             AND added = %(added)s \
                              ORDER BY indego.added DESC;"""
-                cur.execute(query, {"search": AsIs(search), "added": added})
+                print(f"\n\nquery:\n{query}\n\n")
 
+                cur.execute(query, {"search": int(search), "added": added})
+                test_results   = cur.fetchall()
+                print(f"\ntest_results:\n{test_results}\n\n")
+
+                # Execute either query using the numeric search
+                cur.execute(numeric_query, {"search": str(search), "added": added})
+
+            # Fetch results, but if there are none...
+            # ...do a text-based search of the name and addressStreet fields for stations
             results = cur.fetchall()
+            if not results:
+                search_query    = """SELECT station->'properties'->'id' "kioskId", \
+                                     station->'properties' "properties" \
+                                     FROM indego, jsonb_array_elements(indego.data->'features') station \
+                                     WHERE ((station->'properties'->>'name' ILIKE '%%%(search)s%%' \
+                                     OR station->'properties'->>'addressStreet' ILIKE '%%%(search)s%%') \
+                                     AND added = %(added)s) \
+                                     ORDER BY indego.added DESC;"""
+                cur.execute(search_query, {"search": AsIs(str(re.sub(r'[^a-zA-Z0-9\&\,\. ]', '', search))), "added": added})
+                results = cur.fetchall()
 
-        return results
+            # Return results
+            return results
 
-    # Print (and return) any exception
+    # Print any exception, and return None
     except Exception as e:
         print(f"\n\nfind_stations:\n{e}\n\n")
-        return e
+        return None
 
     # Close the database connection
     finally:
@@ -172,20 +179,26 @@ def index(search=None, emoji=False):
     if request.headers['Host'] and 'xn--h78h' in request.headers['Host']:
         emoji       = True
 
-    # Get the stations based on any search input
+    # Get the stations based on any search input, and respond using a 404 if no stations were found
     results         = find_stations(search)
-
     if results:
         code        = 200
+        count       = len(results)
         stations    = dict(results)
-
-    # If no stations were found, respond using a 404
     else:
         code        = 404
+        count       = 0
         stations    = None
 
-    # Render the Jinja2 template listing which ever stations
-    return render_template('index.html.j2', stations=stations, emoji=emoji), code
+    # Return Jinja2 template listing stations, and HTTP header with the result count
+    r   = make_response(
+            render_template('index.html.j2',
+                stations    = stations,
+                emoji       = emoji
+            ), code
+        )
+    r.headers.set('X-Station-Count', count)
+    return r
 
 
 """
