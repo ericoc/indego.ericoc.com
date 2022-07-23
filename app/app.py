@@ -39,11 +39,9 @@ def dbc():
 """
 Define a function to find stations, in the latest database entry, based on whatever search string
 """
-def find_stations(search=None):
+def find_stations(search=None, field=None):
 
     try:
-        # Create a query to find the latest database entry that is not null
-        latest_added_query  = """SELECT MAX(added) FROM indego WHERE data IS NOT NULL;"""
 
         # Connect to the database
         conn = dbc()
@@ -55,57 +53,32 @@ def find_stations(search=None):
             latest_added    = cur.fetchone()
             added           = latest_added[0]
 
-            # Use default query if there is no search
-            if not search or search == '':
+            if not search and not field:
                 default_query   = """SELECT station->'properties'->'id' "kioskId", station->'properties' "properties" \
                                      FROM indego, jsonb_array_elements(indego.data->'features') station \
                                      WHERE added = %s \
                                      ORDER BY indego.added DESC;"""
                 cur.execute(default_query, (added,))
-                return cur.fetchall()
+                default_results = cur.fetchall()
+                return default_results
 
-            # Search postal/zip code or kiosk/station ID, if the search is numeric
-            if isinstance(search, int) or search.isnumeric():
+            # Perform searches
+            if search:
 
-                # Postal/zip codes are five digits
-                if len(str(search)) == 5:
-                    field           = 'addressZipCode'
-                    numeric_query   = """SELECT station->'properties'->'id' "kioskId", \
-                                         station->'properties' "properties" \
-                                         FROM indego, jsonb_array_elements(indego.data->'features') station \
-                                         WHERE station->'properties'->>'addressZipCode' = %(search)s \
-                                         AND added = %(added)s \
-                                         ORDER BY indego.added DESC;"""
+                # Search specific fields, if requested
+                if field:
+                    field_query = f"""SELECT station->'properties'->'id' "kioskId", \
+                                      station->'properties' "properties" \
+                                      FROM indego, jsonb_array_elements(indego.data->'features') station \
+                                      WHERE station->'properties'->>'{field}' = '%(search)s' \
+                                      AND added = %(added)s \
+                                      ORDER BY indego.added DESC;"""
+                    cur.execute(field_query, {"search": int(search), "added": added})
+                    field_results = cur.fetchall()
+                    if field_results:
+                        return field_results
 
-                # Kiosk/station IDs are four digits
-                elif len(str(search)) == 4:
-                    field           = 'kioskId'
-                    numeric_query   = """SELECT station->'properties'->'id' "kioskId", \
-                                         station->'properties' "properties" \
-                                         FROM indego, jsonb_array_elements(indego.data->'features') station \
-                                         WHERE station->'properties'->>'kioskId' = %(search)s \
-                                         AND added = %(added)s \
-                                         ORDER BY indego.added DESC;"""
-
-                query   = f"""SELECT station->'properties'->'id' "kioskId", \
-                             station->'properties' "properties" \
-                             FROM indego, jsonb_array_elements(indego.data->'features') station \
-                             WHERE station->'properties'->>'{field}' = '%(search)s' \
-                             AND added = %(added)s \
-                             ORDER BY indego.added DESC;"""
-                print(f"\n\nquery:\n{query}\n\n")
-
-                cur.execute(query, {"search": int(search), "added": added})
-                test_results   = cur.fetchall()
-                print(f"\ntest_results:\n{test_results}\n\n")
-
-                # Execute either query using the numeric search
-                cur.execute(numeric_query, {"search": str(search), "added": added})
-
-            # Fetch results, but if there are none...
-            # ...do a text-based search of the name and addressStreet fields for stations
-            results = cur.fetchall()
-            if not results:
+                # Finally, search name and addressStreet fields
                 search_query    = """SELECT station->'properties'->'id' "kioskId", \
                                      station->'properties' "properties" \
                                      FROM indego, jsonb_array_elements(indego.data->'features') station \
@@ -113,11 +86,11 @@ def find_stations(search=None):
                                      OR station->'properties'->>'addressStreet' ILIKE '%%%(search)s%%') \
                                      AND added = %(added)s) \
                                      ORDER BY indego.added DESC;"""
-                cur.execute(search_query, {"search": AsIs(str(re.sub(r'[^a-zA-Z0-9\&\,\. ]', '', search))), "added": added})
-                results = cur.fetchall()
+                cur.execute(search_query, {"search": AsIs(re.sub(r'[^a-zA-Z0-9\&\,\. ]', '', str(search))), "added": added})
+                search_results  = cur.fetchall()
+                return search_results
 
-            # Return results
-            return results
+            return None
 
     # Print any exception, and return None
     except Exception as e:
@@ -134,25 +107,20 @@ Define a function to retrieve historical bicycle availability data from PostgreS
 def fetch_chart_data(id=None):
 
     # Bail if the station ID given seems non-existent
-    if not id or not isinstance(id, int) or not find_stations(id):
+    if not id or not isinstance(id, int) or not find_stations(search=id, field='kioskId'):
         return None
 
-    # Proceed with trying to get historical bicycle availability
     try:
 
-        # Create a query to get timestamps, along with bicycles available at that time, for a specific station kioskId
-        query       = """SELECT EXTRACT(EPOCH FROM added)*1000 "when", \
-                        station->'properties'->'bikesAvailable' "bikesAvailable" \
-                     FROM indego, jsonb_array_elements(data->'features') station \
-                     WHERE added > NOW() - INTERVAL '1 MONTH' \
-                     AND station->'properties'->>'kioskId' = '%s' \
-                     ORDER BY added ASC;"""
-
-        # Connect to the database to get chart data
+        # Connect to the database to create and execute a query for chart data for a single station ID
         conn        = dbc()
         with conn.cursor() as cur:
-
-            # Execute the query using the stations kioskId that we want availability information for
+            query   = """SELECT EXTRACT(EPOCH FROM added)*1000 "when", \
+                         station->'properties'->'bikesAvailable' "bikesAvailable" \
+                         FROM indego, jsonb_array_elements(data->'features') station \
+                         WHERE added > NOW() - INTERVAL '1 MONTH' \
+                         AND station->'properties'->>'kioskId' = '%s' \
+                         ORDER BY added ASC;"""
             cur.execute(query, (id,))
             result  = cur.fetchall()
 
@@ -170,21 +138,19 @@ def fetch_chart_data(id=None):
 
 """
 Define primary route that displays search results and lists stations, from the database
-By default, all stations are shown, from the latest JSONB row added to the database that is not NULL
 """
 @app.route('/', methods=['GET'])
-def index(search=None, emoji=False):
+def index(stations=find_stations(), emoji=False):
 
-    # Display stations with bicycle emojis when using the punycode URL
+    # Display stations with bicycle emojis at punycode URL
     if request.headers['Host'] and 'xn--h78h' in request.headers['Host']:
-        emoji       = True
+        emoji = True
 
-    # Get the stations based on any search input, and respond using a 404 if no stations were found
-    results         = find_stations(search)
-    if results:
+    # Count results, or respond using a 404 if no stations were found
+    if stations:
         code        = 200
-        count       = len(results)
-        stations    = dict(results)
+        count       = len(stations)
+        stations    = dict(stations)
     else:
         code        = 404
         count       = 0
@@ -209,7 +175,27 @@ They are then displayed via the index() function and its Jinja2 template
 @app.route('/search/', methods=['GET'])
 @app.route('/search/<path:search>', methods=['GET'])
 def search_stations(search=None):
-    return index(search=search)
+    stations = find_stations(search=search)
+    return index(stations=stations)
+
+
+"""
+Define Flask search route to allow searching stations with only a number
+"""
+@app.route('/search/<int:num>', methods=['GET'])
+def search_stations_numeric(num=None, field=None):
+
+    length  = len(str(num))
+
+    if length == 4:
+        field   = 'kioskId'
+    elif length == 5:
+        field   = 'addressZipCode'
+    else:
+        num = str(num)
+
+    stations = find_stations(search=num, field=field)
+    return index(stations=stations)
 
 
 """
@@ -229,7 +215,7 @@ This is usually shown within a pop-up, from the main index page
 def chart_station(chart_string=None):
 
     # Find stations based on route search string
-    chart_results       = find_stations(chart_string)
+    chart_results       = find_stations(search=chart_string)
 
     # Assuming any stations were found, respond using a 200
     if chart_results:
@@ -242,7 +228,10 @@ def chart_station(chart_string=None):
         code            = 404
 
     # Render the Jinja2 template to show charts (which are mostly server-generated JavaScript, using the functions below)
-    return render_template('chart.html.j2', chart_stations=chart_stations, chart_string=chart_string), code
+    return render_template('chart.html.j2',
+                                chart_stations  = chart_stations,
+                                chart_string    = chart_string
+                          ), code
 
 
 """
@@ -252,7 +241,7 @@ Define Flask route for the front-end JavaScript necessary for charts
 def chartjs_station(chartjs_string=None):
 
     # Find stations based on route search string
-    chartjs_results         = find_stations(chartjs_string)
+    chartjs_results         = find_stations(search=chartjs_string)
 
     # Assuming any stations were found, respond using a 200
     if chartjs_results:
@@ -269,10 +258,9 @@ def chartjs_station(chartjs_string=None):
     This route is usually only included from the /chart/ route with a station kioskID in a pop-up from the main page
     This can be called with a string to show multiple stations (each station found will have its own chart on one page, which can be resource-intensive with many stations)
     """
-    chartjs_template        = render_template('chart.js.j2', chartjs_stations=chartjs_stations), code
-    chartjs_response        = make_response(chartjs_template)
-    chartjs_response.headers['Content-Type'] = 'text/javascript'
-    return chartjs_response
+    r   = make_response(render_template('chart.js.j2', chartjs_stations=chartjs_stations), code)
+    r.headers['Content-Type'] = 'text/javascript'
+    return r
 
 
 """
@@ -282,7 +270,7 @@ Define Flask route for generating the JavaScript using PostgreSQL data for chart
 def chartdata_station(id=None):
 
     # Find single station based on route kioskId (cannot be a string)
-    chartdata_result        = find_stations(id)
+    chartdata_result        = find_stations(search=id, field='kioskId')
 
     # Respond using a 200 if the one station was found and has historical data
     if chartdata_result:
@@ -301,10 +289,9 @@ def chartdata_station(id=None):
     This route is called by the chart_station function (/chart/ route)
     It provides a JavaScript list of timestamps along with the number of bicycles available at that time for a specific station using historical PostgreSQL data
     """
-    chartdata_template      = render_template('chartdata.js.j2', station=chartdata_station, chart_data=chart_data), code
-    chartdata_response      = make_response(chartdata_template)
-    chartdata_response.headers['Content-Type'] = 'text/javascript'
-    return chartdata_response
+    r   = make_response(render_template('chartdata.js.j2', station=chartdata_station, chart_data=chart_data), code)
+    r.headers['Content-Type'] = 'text/javascript'
+    return r
 
 
 """
