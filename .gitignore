@@ -2,6 +2,7 @@ __pycache__
 venv/
 db_creds*.py
 config.py
+secrets.py
 *.gz
 *.log
 *.pyc
