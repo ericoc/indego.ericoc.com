@@ -1,5 +1,5 @@
 {%- if station -%}
-var data_{{ station[0][1]['kioskId'] }} = ([
+var data_{{ station['kioskId'] }} = ([
  {%- if chart_data and chart_data is iterable -%}
   {%- for data_point in chart_data %}
     [{{ data_point[0] }}, {{ data_point[1] }}]

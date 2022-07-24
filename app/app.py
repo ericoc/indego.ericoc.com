@@ -65,6 +65,15 @@ def find_stations(search=None, field=None):
             # Perform searches
             if search:
 
+                # Check for numeric searches
+                if not field and search.isnumeric():
+                    length  = len(search)
+
+                    if length == 4:
+                        field   = 'kioskId'
+                    elif length == 5:
+                        field   = 'addressZipCode'
+
                 # Search specific fields, if requested
                 if field:
                     field_query = f"""SELECT station->'properties'->'id' "kioskId", \
@@ -178,26 +187,6 @@ def search_stations(search=None):
     stations = find_stations(search=search)
     return index(stations=stations)
 
-
-"""
-Define Flask search route to allow searching stations with only a number
-"""
-@app.route('/search/<int:num>', methods=['GET'])
-def search_stations_numeric(num=None, field=None):
-
-    length  = len(str(num))
-
-    if length == 4:
-        field   = 'kioskId'
-    elif length == 5:
-        field   = 'addressZipCode'
-    else:
-        num = str(num)
-
-    stations = find_stations(search=num, field=field)
-    return index(stations=stations)
-
-
 """
 Define Flask route that allows searching via the POST method search form (on the Jinja2 template index page)
 This simply redirects to /search/<search_query> and handled by the above (search_stations) function which passes it off to the index() function
@@ -215,7 +204,9 @@ This is usually shown within a pop-up, from the main index page
 def chart_station(chart_string=None):
 
     # Find stations based on route search string
+    print(chart_string)
     chart_results       = find_stations(search=chart_string)
+    print(f"chart_results:\n{chart_results}\n\n")
 
     # Assuming any stations were found, respond using a 200
     if chart_results:
@@ -242,10 +233,12 @@ def chartjs_station(chartjs_string=None):
 
     # Find stations based on route search string
     chartjs_results         = find_stations(search=chartjs_string)
+    print(f"chartjs_results:\n{chartjs_results}\n")
 
     # Assuming any stations were found, respond using a 200
     if chartjs_results:
         chartjs_stations    = chartjs_results
+        print(f"chartjs_stations:\n{chartjs_stations}\n")
         code                = 200
 
     # If no stations were found, respond using a 404
@@ -274,7 +267,7 @@ def chartdata_station(id=None):
 
     # Respond using a 200 if the one station was found and has historical data
     if chartdata_result:
-        chartdata_station   = chartdata_result
+        chartdata_station   = chartdata_result[0][1]
         chart_data          = fetch_chart_data(id)
         code                = 200
 
