@@ -62,10 +62,10 @@ def find_stations(search=None, field=None):
                 default_results = cur.fetchall()
                 return default_results
 
-            # Perform searches
+            # Perform any search requested
             if search:
 
-                # Check for numeric searches
+                # Check for numeric search query indicative of kiosk ID or zip/postal code (4 or 5 digits)
                 if not field and search.isnumeric():
                     length  = len(search)
 
@@ -74,7 +74,7 @@ def find_stations(search=None, field=None):
                     elif length == 5:
                         field   = 'addressZipCode'
 
-                # Search specific fields, if requested
+                # Try to match and return rows with specific field values, if requested
                 if field:
                     field_query = f"""SELECT station->'properties'->'id' "kioskId", \
                                       station->'properties' "properties" \
@@ -87,7 +87,7 @@ def find_stations(search=None, field=None):
                     if field_results:
                         return field_results
 
-                # Finally, search name and addressStreet fields
+                # Finally, match and return rows using a text search on name and addressStreet fields
                 search_query    = """SELECT station->'properties'->'id' "kioskId", \
                                      station->'properties' "properties" \
                                      FROM indego, jsonb_array_elements(indego.data->'features') station \
@@ -122,7 +122,7 @@ def fetch_chart_data(id=None):
     try:
 
         # Connect to the database to create and execute a query for chart data for a single station ID
-        conn        = dbc()
+        conn    = dbc()
         with conn.cursor() as cur:
             query   = """SELECT EXTRACT(EPOCH FROM added)*1000 "when", \
                          station->'properties'->'bikesAvailable' "bikesAvailable" \
@@ -132,8 +132,6 @@ def fetch_chart_data(id=None):
                          ORDER BY added ASC;"""
             cur.execute(query, (id,))
             result  = cur.fetchall()
-
-        # Return the query results
         return result
 
     # Print (and return) any exceptions
@@ -146,7 +144,7 @@ def fetch_chart_data(id=None):
         conn.close()
 
 """
-Define primary route that displays search results and lists stations, from the database
+Define primary route that displays search results and lists stations, from the latest row in the database
 """
 @app.route('/', methods=['GET'])
 def index(stations=find_stations(), emoji=False):
@@ -203,22 +201,15 @@ This is usually shown within a pop-up, from the main index page
 @app.route('/chart/<string:chart_string>', methods=['GET'])
 def chart_station(chart_string=None):
 
-    # Find stations based on route search string
-    print(chart_string)
+    # Find stations based on route search string and return any results using a 200 response, otherwise 404
     chart_results       = find_stations(search=chart_string)
-    print(f"chart_results:\n{chart_results}\n\n")
-
-    # Assuming any stations were found, respond using a 200
     if chart_results:
         chart_stations  = chart_results
         code            = 200
-
-    # If no stations were found, respond using a 404
     else:
         chart_stations  = None
         code            = 404
 
-    # Render the Jinja2 template to show charts (which are mostly server-generated JavaScript, using the functions below)
     return render_template('chart.html.j2',
                                 chart_stations  = chart_stations,
                                 chart_string    = chart_string
@@ -231,33 +222,22 @@ Define Flask route for the front-end JavaScript necessary for charts
 @app.route('/chartjs/<string:chartjs_string>.js', methods=['GET'])
 def chartjs_station(chartjs_string=None):
 
-    # Find stations based on route search string
+    # Find any stations based on route search string and respond using a 200, or 404 if none found
     chartjs_results         = find_stations(search=chartjs_string)
-    print(f"chartjs_results:\n{chartjs_results}\n")
-
-    # Assuming any stations were found, respond using a 200
     if chartjs_results:
         chartjs_stations    = chartjs_results
-        print(f"chartjs_stations:\n{chartjs_stations}\n")
         code                = 200
-
-    # If no stations were found, respond using a 404
     else:
         chartjs_stations    = None
         code                = 404
 
-    """
-    Render the chartjs Jinja2 template as JavaScript
-    This route is usually only included from the /chart/ route with a station kioskID in a pop-up from the main page
-    This can be called with a string to show multiple stations (each station found will have its own chart on one page, which can be resource-intensive with many stations)
-    """
     r   = make_response(render_template('chart.js.j2', chartjs_stations=chartjs_stations), code)
     r.headers['Content-Type'] = 'text/javascript'
     return r
 
 
 """
-Define Flask route for generating the JavaScript using PostgreSQL data for charts
+Define Flask route for generating the JavaScript using PostgreSQL data for charts, for a single station
 """
 @app.route('/chartdata/<int:id>.js', methods=['GET'])
 def chartdata_station(id=None):
@@ -265,23 +245,16 @@ def chartdata_station(id=None):
     # Find single station based on route kioskId (cannot be a string)
     chartdata_result        = find_stations(search=id, field='kioskId')
 
-    # Respond using a 200 if the one station was found and has historical data
+    # Respond using a 200 if the one station was found and has historical data, otherwise 404
     if chartdata_result:
         chartdata_station   = chartdata_result[0][1]
         chart_data          = fetch_chart_data(id)
         code                = 200
-
-    # Otherwise, respond using a 404
     else:
         chartdata_station   = None
         chart_data          = None
         code                = 404
 
-    """
-    Render the chartdata Jinja2 template as JavaScript
-    This route is called by the chart_station function (/chart/ route)
-    It provides a JavaScript list of timestamps along with the number of bicycles available at that time for a specific station using historical PostgreSQL data
-    """
     r   = make_response(render_template('chartdata.js.j2', station=chartdata_station, chart_data=chart_data), code)
     r.headers['Content-Type'] = 'text/javascript'
     return r
