@@ -151,7 +151,7 @@
             <div id="station-list" title="Station List">
                 <ol>
             {%- for kiosk_id, station in stations.items() %}
-                    <li id="{{ kiosk_id }}" title="{{ kiosk_id }}">
+                    <li id="{{ kiosk_id }}" title="{{ kiosk_id }}" value="{{ kiosk_id }}">
                         <a href="#{{ kiosk_id }}" onclick="markerOpen({{ kiosk_id }});" title="{{ station['name'] | safe }}">
                             {{ station['name'] | safe }}
                         </a>
