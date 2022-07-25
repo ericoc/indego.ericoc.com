@@ -1,0 +1,196 @@
+@font-face {
+    font-family:    'Rock Salt';
+    src:            url('/static/RockSalt-Regular.ttf');
+}
+
+html, body, table {
+    font-family:    Verdana, sans-serif;
+}
+
+h1 {
+    font-size:      1.5em;
+    font-family:    'Rock Salt', cursive;
+    font-weight:    normal;
+}
+
+#logo {
+    display:        inline-block;
+    font-size:      1.5em;
+    transform:      scaleX(-1);
+}
+
+#logo:hover {
+    transform:      rotate(-45deg) scaleX(-1);
+}
+
+#logo:active {
+    transform:      rotate(-75deg) scaleX(-1);
+}
+
+h1 {
+    display:        inline-block;
+}
+
+h2 {
+    display:        inline-block;
+    float:          right;
+    font-weight:    normal;
+    text-align:     right;
+}
+
+h3 {
+    display:        inline-block;
+    font-weight:    normal;
+    padding-left:   5em;
+    text-align:     left;
+}
+
+a {
+    text-decoration:    none;
+}
+
+a:link, a:active, a:visited {
+    color:  #0082cb;
+}
+
+a:hover, li:target a, #span-chosen {
+    color:          #a000a0;
+}
+
+li:target {
+    font-weight:    bold;
+}
+
+li:target a {
+    font-weight:    normal;
+}
+
+#date-chosen, #map-canvas, table {
+    border-color:   #0082cb;
+    border-style:   solid;
+    border-width:   2.5px;
+}
+
+input[type='date'] { 
+    font-size:      1.25em;
+    height:         1.25em;
+}
+
+#date-chosen {
+    color:          #0082cb;
+}
+
+#time-spans {
+    position:       fixed;
+    word-spacing:   0.5em;
+}
+
+#left-box {
+    float:          left;
+    position:       fixed;
+    height:         95%;
+    width:          55%;
+}
+
+#right-box {
+    float:          right;
+    text-align:     right;
+    width:          35%;
+}
+
+@media (max-width: 1024px) {
+
+    #left-box, h1, h2, h3, #right-box, #time-spans, #flashes {
+        clear:          both;
+        display:        block;
+        float:          none;
+        padding-left:   0;
+        position:       static;
+        text-align:     left;
+    }
+
+    li, #left-box {
+        padding:        0.25em;
+        width:          80vw;
+    }
+
+    #map-canvas {
+        margin:         none;
+        padding-top:    5em;
+        padding-bottom: 5em;
+        height:         80%;
+        width:          80vw;
+    }
+}
+
+#map-canvas {
+    margin-top:         1em;
+    height:             80%;
+    width:              100%;
+}
+
+#flashes {
+    margin-top:         2.5em;
+    color:              #f80;
+    font-weight:        bold;
+}
+
+.flash-fatal {
+    color:              #a00;
+}
+
+th {
+    font-weight:        normal;
+}
+
+tr:nth-child(2n) {
+    background-color:   #ddd;
+}
+
+td:nth-child(1) {
+    font-weight:        bold;
+}
+
+td:nth-child(2), td:nth-child(3) {
+    text-align:         right;
+}
+
+li:nth-child(2n) {
+    background-color:   #ddd;
+}
+
+td {
+    border:     none;
+}
+
+@media (prefers-color-scheme: dark) {
+
+    body, table, li:nth-child(n), li:target a, input[type='date'] {
+        background-color:   #444;
+        color:              #fff;
+    }
+
+    input[type='date'] {
+        border-color:       #0082cb;
+        border-style:       solid;
+        border-width:       2.5px;
+    }
+
+    a:hover, #span-chosen, #date-chosen {
+        color:              #fff;
+    }
+
+    tr:nth-child(2n) {
+        background-color:   #ddd;
+        color:              #000;
+    }
+
+    .marker-header {
+        background-color:   #fff;
+        color:              #000;
+    }
+
+    .marker-header a:hover {
+        color:              #a000a0;
+    }
+}

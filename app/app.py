@@ -1,6 +1,6 @@
 import re
+import secrets
 import psycopg2
-import db_creds_ro
 from psycopg2.extensions import AsIs
 from flask import Flask, make_response, redirect, render_template, request, send_from_directory, url_for
 
@@ -19,12 +19,11 @@ if __name__ == '__main__':
 """
 Define a function to connect to the PostgreSQL database (using read-only credentials)
 """
-def dbc():
+def dbc(username=secrets.db_creds['username'], password=secrets.db_creds['password']):
     try:
-        import db_creds_ro
         return psycopg2.connect(
-                                user        = db_creds_ro.db_creds['username'],
-                                password    = db_creds_ro.db_creds['password'],
+                                user        = username,
+                                password    = password,
                                 host        = '127.0.0.1',
                                 port        = 5432,
                                 database    = 'indego'
@@ -168,6 +167,32 @@ def index(stations=find_stations(), emoji=False):
             render_template('index.html.j2',
                 stations    = stations,
                 emoji       = emoji
+            ), code
+        )
+    r.headers.set('X-Station-Count', count)
+    return r
+
+"""
+Define map route that displays stations on a Google Map
+"""
+@app.route('/map', methods=['GET'])
+def map(stations=find_stations(), emoji=False, googlemaps_api_key=secrets.googlemaps_api_key):
+
+    # Count results, or respond using a 404 if no stations were found
+    if stations:
+        code        = 200
+        count       = len(stations)
+        stations    = dict(stations)
+    else:
+        code        = 404
+        count       = 0
+        stations    = None
+
+    # Return Jinja2 template listing stations, and HTTP header with the result count
+    r   = make_response(
+            render_template('map.html.j2',
+                stations            = stations,
+                googlemaps_api_key  = googlemaps_api_key
             ), code
         )
     r.headers.set('X-Station-Count', count)

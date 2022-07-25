@@ -20,10 +20,16 @@
     </head>
 
     <body>
-        <h1><a href="https://indego.ericoc.com/">Indego Bikes</a> <a href="https://xn--h78h.ericoc.com/">🚲</a></h1><br>
-
+        <h1>
+            <a href="{{ url_for('index') }} ">Indego Bikes</a> <a href="https://xn--h78h.ericoc.com/">🚲</a>
+        </h1>
+        <br>
         <form method="post" action="{{ url_for('search_form') }}">
-            <input type="text" name="search"> <i>(i.e. "<a href="{{ url_for('search_stations', search='fairmount') }}">fairmount</a>" or "<a href="{{ url_for('search_stations', search='19107') }}">19107</a>")</i>
+            <input type="text" name="search">
+            <i>
+            (i.e. "<a href="{{ url_for('search_stations', search='fairmount') }}">fairmount</a>"
+            or "<a href="{{ url_for('search_stations', search='19107') }}">19107</a>")
+            </i>
             <input type="submit" value="Search!">
         </form><br>
 
