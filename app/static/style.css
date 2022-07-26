@@ -48,7 +48,7 @@ a:hover, a:active {
     color:              #006;
 }
 
-#totals {
+#totals, code {
     float:              right;
     font-size:          0.8em;
 }
