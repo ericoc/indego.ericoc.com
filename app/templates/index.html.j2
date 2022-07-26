@@ -1,124 +1,293 @@
+{%- macro graph(count, character) %}
+    {%- if count and count > 0 -%}
+        {%- for item in range(count) -%}{{ character }}{%- endfor -%}
+    {%- endif -%}
+{%- endmacro %}
+{%- if emoji %}
+    {%- set bikes_character = '🚲' %}
+    {%- set docks_character = '=' %}
+    {%- set bikes_css_class = 'emoji' %}
+    {%- set docks_css_class = 'emoji' %}
+{%- else %}
+    {%- set bikes_character = '█' %}
+    {%- set docks_character = '█' %}
+    {%- set bikes_css_class = 'bikes' %}
+    {%- set docks_css_class = 'docks' %}
+{%- endif %}
+{%- if stations is defined and stations is iterable and stations | length > 0 -%}
+    {%- set total_stations          = stations | length %}
+    {%- set available_stations      = stations.values() | selectattr('kioskPublicStatus', '==', 'Active') | list | length %}
+    {%- set unavailable_stations    = stations.values() | selectattr('kioskPublicStatus', '!=', 'Active') | list | length %}
+    {%- set total_bikes_available   = stations.values() | sum(attribute='bikesAvailable') %}
+    {%- set total_docks_available   = stations.values() | sum(attribute='docksAvailable') %}
+    {%- set center_lat              = stations.values() | map(attribute='latitude') | sum / total_stations %}
+    {%- set center_lng              = stations.values() | map(attribute='longitude') | sum / total_stations %}
+{%- else -%}
+    {%- set total_stations          = 0 -%}
+    {%- set available_stations      = 0 %}
+    {%- set unavailable_stations    = 0 %}
+    {%- set total_bikes_available   = 0 %}
+    {%- set total_docks_available   = 0 %}
+    {%- set center_lat              = 39.9528 %}
+    {%- set center_lng              = -75.1635 %}
+{%- endif -%}
 <!DOCTYPE html>
 <html lang="en">
-
     <head>
+        <meta chartset="utf-8">
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <meta name="author" content="Eric O'Callaghan">
-        <meta name="description" content="Philadelphia Indego Bikes">
-        <meta name="keywords" content="ericoc, indego, philadelphia, philly, bikes, bikeshare, bicycles">
+        <meta name="description" content="A quick and easy way to see available bicycles and docks for Philadlephia Indego bicycle-share stations">
+        <meta name="keywords" content="Indego, RideIndego, Ride Indego, Philadelphia, Philly, bikes, bikeshare, bike-share, bicycles">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta property="og:type" content="website">
-        <meta property="og:site_name" content="Philadelphia Indego Bikes">
-        <meta property="og:title" content="Indego Bicycle Stations">
-        <meta property="og:description" content="A quick and easy way to see available bicycles and docks for Philadlephia Indego bicycle-share stations.">
+        <meta property="og:site_name" content="Philadelphia Indego Bicycle Stations">
+        <meta property="og:title" content="Philadelphia Indego Bicycle Stations">
+        <meta property="og:description" content="A quick and easy way to see available bicycles and docks for Philadlephia Indego bicycle-share stations">
         <meta property="og:url" content="{{ url_for('index', _external=True) }}">
         <meta property="og:image" content="{{ url_for('static', filename='icon.png', _external=True) }}">
-        <link href="{{ url_for('static', filename='indego.css') }}" rel="stylesheet" type="text/css">
+        <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet" type="text/css">
         <link rel="shortcut icon" href="{{ url_for('static', filename='icon.png') }}">
         <link rel="apple-touch-icon" href="{{ url_for('static', filename='icon.png') }}">
-        <title>Indego Bikes!</title>
+        <title>
+            Philadelphia Indego Bicycle Stations
+        </title>
+    {%- if googlemaps_api_key %}
+        <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key={{ googlemaps_api_key }}&callback=initMap" async defer>
+        </script>
+    {%- endif %}
+        <script type="text/javascript">
+    {%- if googlemaps_api_key %}
+
+            // Start with empty markers and infowindows
+            var markers     = [];
+            var infowindows = [];
+
+            // Google map init function
+            var map;
+            function initMap() {
+
+                var center = { 
+                    lat:    {{ center_lat }},
+                    lng:    {{ center_lng }}
+                };
+
+                // Create the map with its center point and zoom
+                map   = new google.maps.Map(document.getElementById('map-canvas'), {
+                    center: center, 
+                    zoom:   12
+                });
+
+        {%- if stations %}
+            {%- for kiosk_id, station in stations.items() %}
+
+              // Begin marker {{ kiosk_id }}
+                {%- set station_name    = station['name'] | safe | replace("'", "\\'") | replace('"', '\\"') %}
+                {%- set address_full    = station['addressStreet'] + ', ' + station['addressCity'] + ', ' + station['addressState'] +  ' ' + station['addressZipCode'] %}
+                {%- set station_address = address_full | safe | replace("'", "\\'") | replace('"', '\\"') %}
+                var contentString_{{ kiosk_id }}   = '<table>';
+                contentString_{{ kiosk_id }}       += '<tr>';
+                contentString_{{ kiosk_id }}       += '<th class="marker-header" title="{{ kiosk_id }}">';
+                contentString_{{ kiosk_id }}       += '<a href="#{{ kiosk_id }}">{{ kiosk_id }}</a>';
+                contentString_{{ kiosk_id }}       += '</th>';
+                contentString_{{ kiosk_id }}       += '<th class="marker-header" title="{{ station_name }}">{{ station_name }}</th>';
+                contentString_{{ kiosk_id }}       += '</tr>';
+                contentString_{{ kiosk_id }}       += '<tr>';
+                contentString_{{ kiosk_id }}       += '<th colspan="2" class="marker-header" title="{{ kiosk_id }} Graph">';
+                contentString_{{ kiosk_id }}       += '<a href="#{{ kiosk_id }}" target="popup" onclick="window.open(this.href,\'_self\'); window.open(\'{{ url_for('chart_station', chart_string=kiosk_id) }}\',\'popup\',\'width=800,height=500\'); return false;">';
+                contentString_{{ kiosk_id }}       += '<span class="{{ bikes_css_class }}">{{ graph(station["bikesAvailable"], bikes_character) }}</span>';
+                contentString_{{ kiosk_id }}       += '<span class="{{ docks_css_class }}">{{ graph(station["docksAvailable"], docks_character) }}</span>';
+                contentString_{{ kiosk_id }}       += '</a>';
+                contentString_{{ kiosk_id }}       += '</th>';
+                contentString_{{ kiosk_id }}       += '</tr>';
+                contentString_{{ kiosk_id }}       += '<tr>';
+                contentString_{{ kiosk_id }}       += '<td>Address</td>';
+                contentString_{{ kiosk_id }}       += '<td title="{{ station_address }}">{{ station_address }}</td>';
+                contentString_{{ kiosk_id }}       += '</tr>';
+                contentString_{{ kiosk_id }}       += '<tr>';
+                contentString_{{ kiosk_id }}       += '<td>Bicycles</td>';
+                contentString_{{ kiosk_id }}       += '<td>{{ station["bikesAvailable"] }}</td>';
+                contentString_{{ kiosk_id }}       += '</tr>';
+                contentString_{{ kiosk_id }}       += '<tr>';
+                contentString_{{ kiosk_id }}       += '<td>Docks</td>';
+                contentString_{{ kiosk_id }}       += '<td>{{ station["docksAvailable"] }} (of {{ station["totalDocks"] }})</td>';
+                contentString_{{ kiosk_id }}       += '</tr>';
+                contentString_{{ kiosk_id }}       += '</table>';
+                const infowindow_{{ kiosk_id }}    = new google.maps.InfoWindow({
+                    content:    contentString_{{ kiosk_id }},
+                });
+
+                const marker_{{ kiosk_id }} = new google.maps.Marker({
+                    position:   { lat: {{ station['latitude'] }}, lng: {{ station['longitude'] }} },
+                    map,
+                    title:      "{{ station_name }}",
+                    zIndex:     {{ kiosk_id }}
+                });
+                marker_{{ kiosk_id }}.addListener('click', () => {
+                    closeWindows(infowindows);
+                    infowindow_{{ kiosk_id }}.open({
+                        anchor:         marker_{{ kiosk_id }},
+                        map,
+                        shouldFocus:    true
+                    });
+                    infowindows[{{ kiosk_id }}] = infowindow_{{ kiosk_id }};
+                });
+                markers[{{ kiosk_id }}] = marker_{{ kiosk_id }};
+
+                infowindow_{{ kiosk_id }}.addListener('closeclick', () => {
+                    delete(infowindows[{{ kiosk_id }}]);
+                });
+              // End marker {{ kiosk_id }}
+
+            {%- endfor %}
+
+                // Open infowindow for a marker if its kiosk ID is in the anchor tag
+                if (window.location.hash.substr(1)) {
+                    markerOpen(window.location.hash.substr(1));
+                };
+
+                // If there is only a single marker available in the search results, open its infowindow
+                if (Object.keys(markers).length == 1) {
+                    for (const [id, marker] of Object.entries(markers)) {
+                        markerOpen(id);
+                    };
+                };
+
+        {%- endif %}
+
+            }; // End initMap function
+
+            // Create a function to pan and zoom the map to the users current GPS location, if requested
+            function findMe() {
+
+                function success(pos) {
+                    var crd = pos.coords;
+                    var center_gps  = { lat: crd.latitude, lng: crd.longitude };
+                    map.panTo(center_gps);
+                    map.setZoom(14);
+
+                    const infowindow_gps    = new google.maps.InfoWindow({
+                        content:    '<h4>Your Location</h4>'
+                    });
+
+                    const marker_gps = new google.maps.Marker({
+                        position:   center_gps,
+                        map,
+                        title:      'Your Location',
+                        icon:       'https://maps.google.com/mapfiles/ms/icons/green-dot.png',
+                        zIndex:     9999,
+                        animation:  google.maps.Animation.DROP
+                    });
+                    marker_gps.addListener('click', () => {
+                        closeWindows(infowindows);
+                        infowindow_gps.open({
+                            anchor:         marker_gps,
+                            map,
+                            shouldFocus:    true
+                        });
+                        infowindows['0'] = infowindow_gps;
+                    });
+                    markers['0'] = marker_gps;
+
+                    infowindow_gps.addListener('closeclick', () => {
+                        delete(infowindows['0']);
+                    });
+                    markerOpen('0');
+                };
+
+                function error(err) {
+                    console.warn(err.code, err.message);
+                };
+
+                var options = {
+                    timeout:    10000,
+                    maximumAge: 0
+                };
+
+                navigator.geolocation.getCurrentPosition(success, error, options);
+            };
+
+            // Create a function to close any open infowindows for markers
+            function closeWindows(infowindows) {
+                if (infowindows) {
+                    for (const [key, value] of Object.entries(infowindows)) {
+                        infowindows[key].close();
+                        delete(infowindows[key]);
+                    };
+                };
+            };
+
+            // Create a function to open infowindows for markers by the id key
+            function markerOpen(id) {
+                google.maps.event.trigger(markers[id], 'click');
+            };
+
+    {%- endif %}
+
+        </script>
     </head>
-
     <body>
-        <h1>
-            <a href="{{ url_for('index') }} ">Indego Bikes</a> <a href="https://xn--h78h.ericoc.com/">🚲</a>
-        </h1>
-        <br>
-        <form method="post" action="{{ url_for('search_form') }}">
-            <input type="text" name="search">
-            <i>
-            (i.e. "<a href="{{ url_for('search_stations', search='fairmount') }}">fairmount</a>"
-            or "<a href="{{ url_for('search_stations', search='19107') }}">19107</a>")
-            </i>
-            <input type="submit" value="Search!">
-        </form><br>
-
-        <table>
-
-            <tr class="header">
-                <td>Kiosk ID</td>
-                <td>Name</td>
-                <td>Bikes</td>
-                <td></td>
-                <td>Docks</td>
-                <td>History</td>
-            </tr>
-
-            {%- macro graph(count, character) %}
-              {%- if count > 0 -%}
-                {%- for item in range(count) -%}{{ character }}{%- endfor -%}
-              {%- endif -%}
-            {%- endmacro %}
-
-            {%- if emoji %}
-              {%- set bikes_character = '🚲' %}
-              {%- set docks_character = '=' %}
-            {%- else %}
-              {%- set bikes_character = '█' %}
-              {%- set docks_character = '█' %}
-            {%- endif %}
-
-            {%- if stations and stations is iterable and stations | length > 0 %}
-              {%- set total_stations        = stations | length %}
-              {%- set unavailable_stations  = stations.values() | selectattr('kioskPublicStatus', '!=', 'Active') | list | length %}
-              {%- set total_bikes_available = stations.values() | sum(attribute='bikesAvailable') %}
-              {%- set total_docks_available = stations.values() | sum(attribute='docksAvailable') %}
-
-              {%- for kiosk_id, station in stations.items() %}
-
-            <tr id="{{ kiosk_id }}">
-                <td{% if station['kioskPublicStatus'] != 'Active' %} class="unavailable"{% endif %}><a href="#{{ kiosk_id }}">{{ kiosk_id }}</a></td>
-                <td><span title="{{ station['addressStreet'] }} ({{ station['addressZipCode'] }})">{{ station['name'] }}{% if station['kioskPublicStatus'] != 'Active' %} ({{ station['kioskPublicStatus'] }}){% endif %}</span></td>
-                <td>{{ station['bikesAvailable'] }}</td>
-                <td><span class="bikes">{{ graph(station['bikesAvailable'], bikes_character) }}</span><span class="docks">{{ graph(station['docksAvailable'], docks_character) }}</span></td>
-                <td>{{ station['docksAvailable'] }}</td>
-                <td class="graphcol"><a href="#{{ kiosk_id }}" target="popup" onclick="window.open(this.href,'_self'); window.open('{{ url_for('chart_station', chart_string=kiosk_id) }}','popup','width=800,height=500'); return false;">📊</a></td>
-            </tr>
-              {%- endfor %}
-
-            {%- else %}
-              {%- set total_stations        = 0 %}
-              {%- set unavailable_stations  = 0 %}
-              {%- set total_bikes_available = 0 %}
-              {%- set total_docks_available = 0 %}
-            <tr>
-                <td align="center" colspan="6">
-                    <i>No stations found!</i>
-                <td>
-            </tr>
-            {%- endif %}
-
-            <tr class="footer">
-                <td>Totals</td>
-                <td>
-                    <span title="{{ total_stations }} stations">
-                        {{ total_stations }} station{%- if total_stations != 1 -%}s{%- endif -%}
-                    </span>
-                  {%- if unavailable_stations > 0 %}
-                    <span title="{{ unavailable_stations }} unavailable">
-                        ({{ unavailable_stations }} unavailable)
-                    </span>
-                  {%- endif %}
-                </td>
-                <td>
-                    <span title="{{ total_bikes_available }} bicycles available">
-                        {{ total_bikes_available }}
-                    </span>
-                </td>
-                <td></td>
-                <td>
-                    <span title="{{ total_docks_available }} docks available">
-                        {{ total_docks_available }}
-                    </span>
-                </td>
-                <td></td>
-            </tr>
-
-        </table>
-
-        <p>courtesy of <a href="https://www.rideindego.com/" target="_blank">Indego</a></p>
-        <p><a href="https://github.com/ericoc/indego.ericoc.com/" target="_blank">view source @ github</a> | my Indego API libraries: <a href="https://github.com/ericoc/indego-py-lib/" target="_blank">python</a> | <a href="https://github.com/ericoc/indego-php-lib/" target="_blank">php</a></p>
-
+        <div id="left-box">
+            <h1>
+                <a href="https://indego.ericoc.com/">Philadelphia Indego Bicycles</a>
+                <a id="logo" href="https://xn--h78h.ericoc.com/">🚲</a>
+            </h1>
+            <div id="totals">
+                <h2 title="{{ available_stations }} / {{ total_stations }} station{% if total_stations != 1 %}s{% endif %} available">
+                    {{ available_stations }} / {{ total_stations }} station{% if total_stations != 1 %}s{% endif %} available
+                </h2>
+                <h3 title="{{ total_bikes_available }} bicycle{% if total_bikes_available != 1 %}s{% endif %} available">
+                    {{ total_bikes_available }} bicycle{% if total_bikes_available != 1 %}s{% endif %} available
+                </h3>
+                <h3 title="{{ total_docks_available }} dock{% if total_docks_available != 1 %}s{% endif %} available">
+                    {{ total_docks_available }} dock{% if total_docks_available != 1 %}s{% endif %} available
+                </h3>
+            </div>
+            <div id="search" title="Search">
+                <form method="post" action="{{ url_for('search_form') }}">
+                    <input type="text" name="search">
+                    <i>
+                        (i.e. "<a href="{{ url_for('search_stations', search='fairmount') }}">fairmount</a>"
+                        or "<a href="{{ url_for('search_stations', search='19107') }}">19107</a>")
+                    </i>
+                    <input type="submit" value="Search!">
+                </form>
+                <button onclick="findMe();">📍</button>
+            </div>
+    {%- with messages = get_flashed_messages(with_categories=True) %}
+        {%- if messages %}
+            <div id="messages" title="Messages">
+                <ul id="flashes">
+            {%- for category, message in messages %}
+                    <li class="flash-{{ category }}">
+                        {{ message }}
+                    </li>
+            {%- endfor %}
+                </ul>
+            </div>
+        {%- endif %}
+    {%- endwith %}
+    {%- if googlemaps_api_key %}
+            <div id="map-canvas"></div>
+    {%- endif %}
+        </div>
+    {%- if total_stations > 0 %}
+        <div id="right-box">
+            <div id="station-list" title="Station List">
+                <ol>
+            {%- for kiosk_id, station in stations.items() %}
+                    <li id="{{ kiosk_id }}" title="{{ kiosk_id }}" value="{{ kiosk_id }}">
+                        <a href="#{{ kiosk_id }}" onclick="markerOpen({{ kiosk_id }});" title="{{ station['name'] | safe }}">
+                            {{ station['name'] | safe }}
+                            <div class="graph" title="{{ kiosk_id }} Graph">
+                                <span title="station['bikesAvailable']" bikes" class="{{ bikes_css_class }}">{{ graph(station["bikesAvailable"], bikes_character) }}</span><span title="station['docksAvailable']" docks" class="{{ docks_css_class }}">{{ graph(station["docksAvailable"], docks_character) }}</span>
+                            </div>
+                        </a>
+                    </li>
+            {%- endfor %}
+                </ol>
+            </div>
+        </div>
+    {%- endif %}
     </body>
-
 </html>

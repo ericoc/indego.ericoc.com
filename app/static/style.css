@@ -1,0 +1,151 @@
+@font-face {
+    font-family:    'Rock Salt';
+    src:            url('/static/RockSalt-Regular.ttf');
+}
+
+html, body, table {
+    font-family:    Open Sans, sans-serif;
+}
+
+h1 {
+    font-family:    'Rock Salt', cursive;
+    font-size:      1.5em;
+}
+
+h1, h2, h3 {
+    font-weight:    normal;
+}
+
+
+#logo {
+    font-size:          1.75em;
+    padding-left:       0.25em;
+}
+
+#logo:hover {
+    transform:      rotate(45deg);
+}
+
+#logo:active {
+    transform:      rotate(75deg);
+}
+
+#logo, #totals, #search, h1, button, form {
+    display:            inline-block;
+}
+
+a {
+    text-decoration:    none;
+}
+
+a:link, a:visited {
+    color:              #0082cb;
+}
+
+a:hover, a:active {
+    color:              #006;
+}
+
+#totals {
+    float:              right;
+    font-size:          0.8em;
+}
+
+#station-list li {
+    text-align: right;
+    list-style:                 none;
+    border-bottom-color:       #0082cb;
+    border-bottom-style:       dotted;
+    border-bottom-width:       0.1em;
+}
+
+tr:nth-child(2n), #station-list li:nth-child(2n) {
+    background-color:   #ddd;
+}
+
+#station-list li:target {
+    list-style:         '🚲 ';
+    font-weight:        bold;
+    background-color:   #94d60a;
+}
+
+.unavailable {
+    background-color:   orange;
+}
+
+.graph {
+    font-size:          0.8em;
+    text-align:         left;
+}
+
+.table-graph {
+    font-size:          1.25em;
+    text-align:         center;
+}
+
+.bikes {
+    color:              #0082cb;
+}
+
+.docks {
+    color:              #444;
+}
+
+.emoji {
+    color:              #000;
+    font-size:          1.25em;
+    letter-spacing:     0.25em;
+}
+
+#map-canvas, table, input[type='text'] {
+    border-color:       #0082cb;
+    border-style:       solid;
+    border-width:       0.25em;
+}
+
+#left-box {
+    float:              left;
+    position:           fixed;
+    height:             90vh;
+    width:              55vw;
+}
+
+#right-box {
+    float:              right;
+    width:              42vw;
+}
+
+#map-canvas {
+    margin-top:         1em;
+    height:             80%;
+    width:              100%;
+}
+
+#flashes {
+    color:              #f80;
+    font-weight:        bold;
+}
+
+.flash-fatal {
+    color:              #a00;
+}
+
+td:nth-child(1) {
+    font-weight:        bold;
+}
+
+td:nth-child(2), td:nth-child(3) {
+    text-align:         right;
+}
+
+
+@media (max-width: 1024px) {
+    h1, h2, h3, #left-box, #map-canvas, #right-box, #search, #station-list, #totals, #flashes {
+        clear:          both;
+        display:        inline-block;
+        float:          none;
+        position:       relative;
+        overflow:       visible;
+        width:          90vw;
+    }
+}
