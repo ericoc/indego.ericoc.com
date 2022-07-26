@@ -248,14 +248,14 @@
         </div>
     {%- if total_stations > 0 %}
         <div id="right-box">
-            <div id="station-list" title="Station List">
+            <div id="station-list" title="Stations">
                 <ol>
             {%- for kiosk_id, station in stations.items() %}
-                    <li id="{{ kiosk_id }}" title="{{ kiosk_id }}" value="{{ kiosk_id }}">
+                    <li id="{{ kiosk_id }}" value="{{ kiosk_id }}">
                         <a href="#{{ kiosk_id }}" onclick="markerOpen({{ kiosk_id }});" title="{{ station['name'] | safe }}">
                             {{ station['name'] | safe }}
-                            <div class="graph" title="{{ kiosk_id }} Graph">
-                                <span title="station['bikesAvailable']" bikes" class="{{ bikes_css_class }}">{{ graph(station["bikesAvailable"], bikes_character) }}</span><span title="station['docksAvailable']" docks" class="{{ docks_css_class }}">{{ graph(station["docksAvailable"], docks_character) }}</span>
+                            <div class="graph">
+                                <span title="{{ station['bikesAvailable'] }} bikes" class="{{ bikes_css_class }}">{{ graph(station["bikesAvailable"], bikes_character) }}</span><span title="{{ station['docksAvailable'] }} docks" class="{{ docks_css_class }}">{{ graph(station["docksAvailable"], docks_character) }}</span>
                             </div>
                         </a>
                     </li>
