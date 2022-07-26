@@ -59,7 +59,7 @@ a:hover, a:active {
     border-bottom-width:       0.1em;
 }
 
-tr:nth-child(2n), #station-list li:nth-child(2n) {
+#station-list li:nth-child(2n) {
     background-color:   #ddd;
 }
 
@@ -116,9 +116,8 @@ tr:nth-child(2n), #station-list li:nth-child(2n) {
 }
 
 #map-canvas {
-    margin-top:         1em;
-    height:             80%;
-    width:              100%;
+    margin-top:         0.5em;
+    height:             75vh;
 }
 
 #flashes {
@@ -130,15 +129,6 @@ tr:nth-child(2n), #station-list li:nth-child(2n) {
     color:              #a00;
 }
 
-td:nth-child(1) {
-    font-weight:        bold;
-}
-
-td:nth-child(2), td:nth-child(3) {
-    text-align:         right;
-}
-
-
 @media (max-width: 1024px) {
     h1, h2, h3, #left-box, #map-canvas, #right-box, #search, #station-list, #totals, #flashes {
         clear:          both;
@@ -147,5 +137,32 @@ td:nth-child(2), td:nth-child(3) {
         position:       relative;
         overflow:       visible;
         width:          90vw;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+
+    body, table li:target a, li, input[type='text'], #station-list li:nth-child(2n), #map-canvas .gm-style-iw, #map-canvas .gm-style {
+        background-color:   #444;
+        color:              #fff;
+    }
+
+    #map-canvas .gm-style-iw div {
+        overflow:           hidden !important;
+        padding:            0.5em;
+    }
+
+    #station-list li:target {
+        list-style:         '🚲 ';
+        font-weight:        bold;
+        background-color:   #94d60a;
+    }
+
+    .docks {
+        color:              #ccc;
+    }
+
+    a:hover, a:active {
+        color:              #fff;
     }
 }

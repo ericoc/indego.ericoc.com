@@ -78,34 +78,21 @@
                 {%- set station_name    = station['name'] | safe | replace("'", "\\'") | replace('"', '\\"') %}
                 {%- set address_full    = station['addressStreet'] + ', ' + station['addressCity'] + ', ' + station['addressState'] +  ' ' + station['addressZipCode'] %}
                 {%- set station_address = address_full | safe | replace("'", "\\'") | replace('"', '\\"') %}
-                var contentString_{{ kiosk_id }}   = '<table>';
-                contentString_{{ kiosk_id }}       += '<tr>';
-                contentString_{{ kiosk_id }}       += '<th class="marker-header" title="{{ kiosk_id }}">';
-                contentString_{{ kiosk_id }}       += '<a href="#{{ kiosk_id }}">{{ kiosk_id }}</a>';
-                contentString_{{ kiosk_id }}       += '</th>';
-                contentString_{{ kiosk_id }}       += '<th class="marker-header" title="{{ station_name }}">{{ station_name }}</th>';
-                contentString_{{ kiosk_id }}       += '</tr>';
-                contentString_{{ kiosk_id }}       += '<tr>';
-                contentString_{{ kiosk_id }}       += '<th colspan="2" class="marker-header" title="{{ kiosk_id }} Graph">';
+                var contentString_{{ kiosk_id }}   = '<h4>';
+                contentString_{{ kiosk_id }}       += '<a href="#{{ kiosk_id }}">{{ station_name }}</a>';
+                contentString_{{ kiosk_id }}       += '</h4>';
                 contentString_{{ kiosk_id }}       += '<a href="#{{ kiosk_id }}" target="popup" onclick="window.open(this.href,\'_self\'); window.open(\'{{ url_for('chart_station', chart_string=kiosk_id) }}\',\'popup\',\'width=800,height=500\'); return false;">';
                 contentString_{{ kiosk_id }}       += '<span class="{{ bikes_css_class }}">{{ graph(station["bikesAvailable"], bikes_character) }}</span>';
                 contentString_{{ kiosk_id }}       += '<span class="{{ docks_css_class }}">{{ graph(station["docksAvailable"], docks_character) }}</span>';
-                contentString_{{ kiosk_id }}       += '</a>';
-                contentString_{{ kiosk_id }}       += '</th>';
-                contentString_{{ kiosk_id }}       += '</tr>';
-                contentString_{{ kiosk_id }}       += '<tr>';
-                contentString_{{ kiosk_id }}       += '<td>Address</td>';
-                contentString_{{ kiosk_id }}       += '<td title="{{ station_address }}">{{ station_address }}</td>';
-                contentString_{{ kiosk_id }}       += '</tr>';
-                contentString_{{ kiosk_id }}       += '<tr>';
-                contentString_{{ kiosk_id }}       += '<td>Bicycles</td>';
-                contentString_{{ kiosk_id }}       += '<td>{{ station["bikesAvailable"] }}</td>';
-                contentString_{{ kiosk_id }}       += '</tr>';
-                contentString_{{ kiosk_id }}       += '<tr>';
-                contentString_{{ kiosk_id }}       += '<td>Docks</td>';
-                contentString_{{ kiosk_id }}       += '<td>{{ station["docksAvailable"] }} (of {{ station["totalDocks"] }})</td>';
-                contentString_{{ kiosk_id }}       += '</tr>';
-                contentString_{{ kiosk_id }}       += '</table>';
+                contentString_{{ kiosk_id }}       += '<br><br>';
+                contentString_{{ kiosk_id }}       += '📊';
+                contentString_{{ kiosk_id }}       += '</a><br><br>';
+                contentString_{{ kiosk_id }}       += 'Kiosk ID: {{ kiosk_id }}<br><br>';
+                contentString_{{ kiosk_id }}       += "{{ station['addressStreet'] | safe }}<br>";
+                contentString_{{ kiosk_id }}       += "{{ station['addressCity'] | safe }}, {{ station['addressState'] | safe }}";
+                contentString_{{ kiosk_id }}       += " {{ station['addressZipCode'] | safe }}<br><br>";
+                contentString_{{ kiosk_id }}       += '<b>Bikes</b>: {{ station["bikesAvailable"] }}<br>';
+                contentString_{{ kiosk_id }}       += '<b>Docks</b>: {{ station["docksAvailable"] }} (of {{ station["totalDocks"] }})<br><br>';
                 const infowindow_{{ kiosk_id }}    = new google.maps.InfoWindow({
                     content:    contentString_{{ kiosk_id }},
                 });
@@ -162,7 +149,6 @@
                     const infowindow_gps    = new google.maps.InfoWindow({
                         content:    '<h4>Your Location</h4>'
                     });
-
                     const marker_gps = new google.maps.Marker({
                         position:   center_gps,
                         map,
@@ -172,20 +158,14 @@
                         animation:  google.maps.Animation.DROP
                     });
                     marker_gps.addListener('click', () => {
-                        closeWindows(infowindows);
                         infowindow_gps.open({
                             anchor:         marker_gps,
                             map,
                             shouldFocus:    true
                         });
-                        infowindows['0'] = infowindow_gps;
                     });
-                    markers['0'] = marker_gps;
+                    google.maps.event.trigger(marker_gps, 'click');
 
-                    infowindow_gps.addListener('closeclick', () => {
-                        delete(infowindows['0']);
-                    });
-                    markerOpen('0');
                 };
 
                 function error(err) {
@@ -194,7 +174,7 @@
 
                 var options = {
                     timeout:            10000,
-                    maximumAge:         30,
+                    maximumAge:         30000,
                     enableHighAccuracy: true
                 };
 
@@ -222,9 +202,10 @@
     </head>
     <body>
         <div id="left-box">
-            <h1>
-                <a href="https://indego.ericoc.com/">Philadelphia Indego Bicycles</a>
-                <a id="logo" href="https://xn--h78h.ericoc.com/">🚲</a>
+            <h1 title="Philadelphia Indego Bicycles">
+                <a href="{{ url_for('index') }}">Philadelphia Indego Bicycles
+                    <span id="logo">🚲</span>
+                </a>
             </h1>
             <div id="totals">
                 <h2 title="{{ available_stations }} / {{ total_stations }} station{% if total_stations != 1 %}s{% endif %} available">
@@ -238,6 +219,7 @@
                 </h3>
             </div>
             <div id="search" title="Search">
+                <button onclick="findMe();">📍</button>
                 <form method="post" action="{{ url_for('search_form') }}">
                     <input type="text" name="search">
                     <i>
@@ -246,7 +228,6 @@
                     </i>
                     <input type="submit" value="Search!">
                 </form>
-                <button onclick="findMe();">📍</button>
             </div>
     {%- with messages = get_flashed_messages(with_categories=True) %}
         {%- if messages %}
