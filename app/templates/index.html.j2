@@ -7,7 +7,6 @@
 {%- set docks_character = '█' %}
 {%- set bikes_css_class = 'bikes' %}
 {%- set docks_css_class = 'docks' %}
-{%- endif %}
 {%- if stations is defined and stations is iterable and stations | length > 0 -%}
     {%- set total_stations          = stations | length %}
     {%- set available_stations      = stations.values() | selectattr('kioskPublicStatus', '==', 'Active') | list | length %}
