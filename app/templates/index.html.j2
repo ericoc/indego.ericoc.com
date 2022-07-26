@@ -200,8 +200,9 @@
                 };
 
                 var options = {
-                    timeout:    10000,
-                    maximumAge: 0
+                    timeout:            10000,
+                    maximumAge:         30,
+                    enableHighAccuracy: true
                 };
 
                 navigator.geolocation.getCurrentPosition(success, error, options);
