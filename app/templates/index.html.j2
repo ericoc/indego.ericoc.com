@@ -80,20 +80,26 @@
                 {%- set station_address = address_full | safe | replace("'", "\\'") | replace('"', '\\"') %}
                 var contentString_{{ kiosk_id }}   = '<h4>';
                 contentString_{{ kiosk_id }}       += '<a href="#{{ kiosk_id }}">{{ station_name }}</a>';
+                contentString_{{ kiosk_id }}       += ' ';
+                contentString_{{ kiosk_id }}       += '<a href="{{ url_for('search_stations', search=kiosk_id) }}#{{ kiosk_id }}">🔗</a>';
                 contentString_{{ kiosk_id }}       += '</h4>';
+                contentString_{{ kiosk_id }}       += '<div class="table-graph">';
                 contentString_{{ kiosk_id }}       += '<a href="#{{ kiosk_id }}" target="popup" onclick="window.open(this.href,\'_self\'); window.open(\'{{ url_for('chart_station', chart_string=kiosk_id) }}\',\'popup\',\'width=800,height=500\'); return false;">';
                 contentString_{{ kiosk_id }}       += '<span class="{{ bikes_css_class }}">{{ graph(station["bikesAvailable"], bikes_character) }}</span>';
                 contentString_{{ kiosk_id }}       += '<span class="{{ docks_css_class }}">{{ graph(station["docksAvailable"], docks_character) }}</span>';
-                contentString_{{ kiosk_id }}       += '<br><br>';
-                contentString_{{ kiosk_id }}       += '📊';
-                contentString_{{ kiosk_id }}       += '</a><br><br>';
-                contentString_{{ kiosk_id }}       += 'Kiosk ID: {{ kiosk_id }}<br>';
-                contentString_{{ kiosk_id }}       += '<b>Status</b>: {{ station["kioskPublicStatus"] | safe }}<br><br>';
+                contentString_{{ kiosk_id }}       += '</a>';
+                contentString_{{ kiosk_id }}       += '</div>';
+                contentString_{{ kiosk_id }}       += '<br>';
+                contentString_{{ kiosk_id }}       += '<b>Bikes</b>: {{ station["bikesAvailable"] }}<br>';
+                contentString_{{ kiosk_id }}       += '<b>Docks</b>: {{ station["docksAvailable"] }} (of {{ station["totalDocks"] }})<br>';
+                contentString_{{ kiosk_id }}       += '<b>Status</b>: {{ station["kioskPublicStatus"] | safe }}<br>';
+                contentString_{{ kiosk_id }}       += '<br>';
                 contentString_{{ kiosk_id }}       += "{{ station['addressStreet'] | safe }}<br>";
                 contentString_{{ kiosk_id }}       += "{{ station['addressCity'] | safe }}, {{ station['addressState'] | safe }}";
-                contentString_{{ kiosk_id }}       += " {{ station['addressZipCode'] | safe }}<br><br>";
-                contentString_{{ kiosk_id }}       += '<b>Bikes</b>: {{ station["bikesAvailable"] }}<br>';
-                contentString_{{ kiosk_id }}       += '<b>Docks</b>: {{ station["docksAvailable"] }} (of {{ station["totalDocks"] }})<br><br>';
+                contentString_{{ kiosk_id }}       += ' ';
+                contentString_{{ kiosk_id }}       += "{{ station['addressZipCode'] | safe }}<br>";
+                contentString_{{ kiosk_id }}       += '<br>';
+                contentString_{{ kiosk_id }}       += '<b>Kiosk #</b>: {{ kiosk_id }}';
                 const infowindow_{{ kiosk_id }}    = new google.maps.InfoWindow({
                     content:    contentString_{{ kiosk_id }},
                 });
@@ -246,6 +252,11 @@
     {%- if googlemaps_api_key %}
             <div id="map-canvas"></div>
     {%- endif %}
+        <p>
+            <code>
+                <a href="https://github.com/ericoc/indego.ericoc.com" target="_blank">https://github.com/ericoc/indego.ericoc.com</a>
+            </code>
+        </p>
         </div>
     {%- if total_stations > 0 %}
         <div id="right-box">
