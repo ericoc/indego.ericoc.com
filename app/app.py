@@ -146,11 +146,7 @@ def fetch_chart_data(id=None):
 Define primary route that displays and maps search results and lists stations, from the latest row in the database
 """
 @app.route('/', methods=['GET'])
-def index(stations=find_stations(), emoji=False, googlemaps_api_key=secrets.googlemaps_api_key):
-
-    # Display stations with bicycle emojis at punycode URL
-    if request.headers['Host'] and 'xn--h78h' in request.headers['Host']:
-        emoji = True
+def index(stations=find_stations(), googlemaps_api_key=secrets.googlemaps_api_key):
 
     # Count results, or respond using a 404 if no stations were found
     if stations:
@@ -165,7 +161,6 @@ def index(stations=find_stations(), emoji=False, googlemaps_api_key=secrets.goog
     # Return Jinja2 template listing stations, and HTTP header with the result count
     r   = make_response(
             render_template('index.html.j2',
-                emoji               = emoji,
                 stations            = stations,
                 googlemaps_api_key  = googlemaps_api_key
             ), code

@@ -3,16 +3,10 @@
         {%- for item in range(count) -%}{{ character }}{%- endfor -%}
     {%- endif -%}
 {%- endmacro %}
-{%- if emoji %}
-    {%- set bikes_character = '🚲' %}
-    {%- set docks_character = '=' %}
-    {%- set bikes_css_class = 'emoji' %}
-    {%- set docks_css_class = 'emoji' %}
-{%- else %}
-    {%- set bikes_character = '█' %}
-    {%- set docks_character = '█' %}
-    {%- set bikes_css_class = 'bikes' %}
-    {%- set docks_css_class = 'docks' %}
+{%- set bikes_character = '█' %}
+{%- set docks_character = '█' %}
+{%- set bikes_css_class = 'bikes' %}
+{%- set docks_css_class = 'docks' %}
 {%- endif %}
 {%- if stations is defined and stations is iterable and stations | length > 0 -%}
     {%- set total_stations          = stations | length %}
