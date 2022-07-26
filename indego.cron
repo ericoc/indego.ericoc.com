@@ -1,2 +1,2 @@
 # m     h   dom mon dow command
-*/10    *   *   *   *   source ~/venv/bin/activate && python3 ~/app/psql_insert.py > ~/psql_insert.log 2>&1
+*/10    *   *   *   *   ~/venv/bin/python3 ~/app/psql_insert.py > ~/psql_insert.log 2>&1
