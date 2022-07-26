@@ -30,7 +30,7 @@ The API end-point that I make requests to is a GeoJSON file which lists every st
 The data is also available in GBFS format here:
 - [https://gbfs.bcycle.com/bcycle_indego/gbfs.json](https://gbfs.bcycle.com/bcycle_indego/gbfs.json)
 
-Furthermore, more information, as well as anonymized trip data is available going back since the year 2005 on the Indego website at:
+Furthermore, anonymized trip data going back since the year 2005 is available on the Indego website at:
 - https://www.rideindego.com/about/data/
 
 #### Data
