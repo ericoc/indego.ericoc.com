@@ -121,7 +121,7 @@ def fetch_chart_data(id=None):
     try:
 
         # Connect to the database to create and execute a query for chart data for a single station ID
-        conn    = dbc()
+        conn = dbc()
         with conn.cursor() as cur:
             query   = """SELECT EXTRACT(EPOCH FROM added)*1000 "when", \
                          station->'properties'->'bikesAvailable' "bikesAvailable" \
