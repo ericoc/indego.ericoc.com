@@ -87,7 +87,8 @@
                 contentString_{{ kiosk_id }}       += '<br><br>';
                 contentString_{{ kiosk_id }}       += '📊';
                 contentString_{{ kiosk_id }}       += '</a><br><br>';
-                contentString_{{ kiosk_id }}       += 'Kiosk ID: {{ kiosk_id }}<br><br>';
+                contentString_{{ kiosk_id }}       += 'Kiosk ID: {{ kiosk_id }}<br>';
+                contentString_{{ kiosk_id }}       += '<b>Status</b>: {{ station["kioskPublicStatus"] | safe }}<br><br>';
                 contentString_{{ kiosk_id }}       += "{{ station['addressStreet'] | safe }}<br>";
                 contentString_{{ kiosk_id }}       += "{{ station['addressCity'] | safe }}, {{ station['addressState'] | safe }}";
                 contentString_{{ kiosk_id }}       += " {{ station['addressZipCode'] | safe }}<br><br>";
@@ -251,7 +252,7 @@
             <div id="station-list" title="Stations">
                 <ol>
             {%- for kiosk_id, station in stations.items() %}
-                    <li id="{{ kiosk_id }}" value="{{ kiosk_id }}">
+                    <li id="{{ kiosk_id }}" value="{{ kiosk_id }}"{% if station['kioskPublicStatus'] != 'Active' %}class="unavailable"{% endif %}>
                         <a href="#{{ kiosk_id }}" onclick="markerOpen({{ kiosk_id }});" title="{{ station['name'] | safe }}">
                             {{ station['name'] | safe }}
                             <div class="graph">
