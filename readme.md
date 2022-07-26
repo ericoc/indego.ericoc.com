@@ -15,7 +15,7 @@ I discovered that a GeoJSON API existed which provides information about the bic
 at each of the 179+ (and growing) stations on the OpenDataPhilly website:
 - [https://www.opendataphilly.org/dataset/bike-share-stations](https://www.opendataphilly.org/dataset/bike-share-stations)
 
-Additionally, I began graphing the data because I was very impressed by [Dr. Randal Olson's](https://www.randalolson.com) blog,
+I began graphing the data because I was very impressed by [Dr. Randal Olson's](https://www.randalolson.com) blog,
 visualizing the data from each station:
 - [Visualizing Indego bike share usage patterns in Philadelphia](https://randalolson.com/2015/07/18/visualizing-indego-bike-share-usage-patterns-in-philadelphia/)
 - [Analyzing the health of Philadelphia's bike share system](https://randalolson.com/2015/08/15/analyzing-the-health-of-philadelphias-bike-share-system/)
@@ -67,13 +67,13 @@ The button to locate yourself on the map relies upon the JavaScript Geolocation 
 
 ### Charts
 
-A neat little "Easter Egg" that most probably will not notice (and almost certainly do not need) is:
+A neat little "Easter Egg":
 - If you click on the blocky chart within one of the Google Maps info windows on a map marker,
 you should receive a pop-up chart showing available bikes at that station for the past thirty (30) days.
   - You can try it out here:
     * https://indego.ericoc.com/search/3022#3022
     * https://indego.ericoc.com/chart/3022
-  - Alternatively, you can even historically chart multiple stations at once:
+  - You can even historically chart multiple stations at once:
     * https://indego.ericoc.com/chart/30th
 
 These charts are created using a JavaScript library called [Highcharts](http://www.highcharts.com/).
