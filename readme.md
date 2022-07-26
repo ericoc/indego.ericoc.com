@@ -84,6 +84,7 @@ I was even lucky enough to write a post for the [Highcharts Blog](https://www.hi
 
 - [https://ericoc.com/](https://ericoc.com/)
 
+---
 
 ### Screenshots
 
@@ -91,10 +92,13 @@ I was even lucky enough to write a post for the [Highcharts Blog](https://www.hi
   - [https://indego.ericoc.com/search/broad](https://indego.ericoc.com/search/broad)
 ![Search results for "Broad"](https://indego.ericoc.com/static/screenshots/broad_search_results.png)
 
+---
+
 - Broad & Pattison station:
   - [https://indego.ericoc.com/search/broad#3188](https://indego.ericoc.com/search/broad#3188)
 ![Broad & Pattison station](https://indego.ericoc.com/static/screenshots/broad_pattison_result.png)
 
+---
 
 - Chart for Broad & Pattison station:
   - [https://indego.ericoc.com/chart/3188](https://indego.ericoc.com/chart/3188)
