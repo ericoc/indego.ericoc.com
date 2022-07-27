@@ -67,7 +67,7 @@ a:hover, a:active {
     border-bottom-width:       0.1em;
 }
 
-#station-list li:nth-child(2n) {
+#station-list li:nth-child(2n), input[type='submit'], button {
     background-color:   #ddd;
 }
 
@@ -106,7 +106,7 @@ a:hover, a:active {
     letter-spacing:     0.25em;
 }
 
-#map-canvas, table, input[type='text'] {
+#map-canvas, table, input, button {
     border-color:       #0082cb;
     border-style:       solid;
     border-width:       0.25em;

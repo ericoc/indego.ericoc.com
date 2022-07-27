@@ -117,6 +117,7 @@
                         map,
                         shouldFocus:    true
                     });
+                    map.setZoom(15)
                     infowindows[{{ kiosk_id }}] = infowindow_{{ kiosk_id }};
                 });
                 markers[{{ kiosk_id }}] = marker_{{ kiosk_id }};
@@ -151,7 +152,7 @@
                     var crd = pos.coords;
                     var center_gps  = { lat: crd.latitude, lng: crd.longitude };
                     map.panTo(center_gps);
-                    map.setZoom(14);
+                    map.setZoom(15);
 
                     const infowindow_gps    = new google.maps.InfoWindow({
                         content:    '<h4>Your Location</h4>'
