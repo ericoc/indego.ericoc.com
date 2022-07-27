@@ -143,12 +143,19 @@ def fetch_chart_data(id=None):
         conn.close()
 
 """
-Define primary route that displays and maps search results and lists stations, from the latest row in the database
+Define primary Flask web route to allow searching/displaying mapped stations, from the latest row in the database
 """
 @app.route('/', methods=['GET'])
-def index(stations=find_stations(), googlemaps_api_key=secrets.googlemaps_api_key):
+def index():
+    return search_stations(search=None)
 
-    # Count results, or respond using a 404 if no stations were found
+@app.route('/search', methods=['GET'])
+@app.route('/search/', methods=['GET'])
+@app.route('/search/<path:search>', methods=['GET'])
+def search_stations(search=None, googlemaps_api_key=secrets.googlemaps_api_key):
+
+    # Get and count results, or respond using a 404 if no stations were found
+    stations    = find_stations(search=search)
     if stations:
         code        = 200
         count       = len(stations)
@@ -168,21 +175,9 @@ def index(stations=find_stations(), googlemaps_api_key=secrets.googlemaps_api_ke
     r.headers.set('X-Station-Count', count)
     return r
 
-
 """
-Define Flask search route to allow searching stations
-They are then displayed via the index() function and its Jinja2 template
-"""
-@app.route('/search', methods=['GET'])
-@app.route('/search/', methods=['GET'])
-@app.route('/search/<path:search>', methods=['GET'])
-def search_stations(search=None):
-    stations = find_stations(search=search)
-    return index(stations=stations)
-
-"""
-Define Flask route that allows searching via the POST method search form (on the Jinja2 template index page)
-This simply redirects to /search/<search_query> and handled by the above (search_stations) function which passes it off to the index() function
+Define Flask route that allows searching via the POST method search form
+This simply redirects to /search/<search_query> and handled by the above (search_stations) function
 """
 @app.route('/search', methods=['POST'])
 def search_form():
@@ -258,6 +253,7 @@ def chartdata_station(id=None):
 """
 Define Flask function to serve some static content
 """
+@app.route('/favicon.ico', methods=['GET'])
 @app.route('/icon.png', methods=['GET'])
 def static_from_root():
     return send_from_directory(app.static_folder, request.path[1:])
