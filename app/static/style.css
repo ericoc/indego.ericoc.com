@@ -25,11 +25,17 @@ h1, h2, h3, h4 {
 }
 
 #logo:hover {
-    transform:      rotate(45deg);
+    transform:          rotate(45deg);
 }
 
 #logo:active {
-    transform:      rotate(75deg);
+    transform:          rotate(75deg);
+}
+
+@media (prefers-reduced-motion) {
+    #logo:active, #logo:hover {
+        transform:      none;
+    }
 }
 
 #logo, #totals, #search, h1, button, form {
