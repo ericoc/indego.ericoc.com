@@ -11,7 +11,7 @@ try:
     dbh = psycopg2.connect(user=db_creds_rw.db_creds['user'], password=db_creds_rw.db_creds['passwd'], host='localhost', port='5432', database='indego')
 
     # Get all Indego stations from the API (but as raw JSON, so not using the library I made...)
-    url = 'https://www.rideindego.com/stations/json/'
+    url = 'https://kiosks.bicycletransit.workers.dev/phl'
     user_agent = 'Indego Python3 API Library - https://github.com/ericoc/indego-py-lib'
     headers = {'Accept': 'application/json', 'User-Agent': user_agent}
     indego_data = requests.get(url, headers=headers)
