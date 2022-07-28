@@ -17,6 +17,10 @@
     {%- set total_electric_available    = stations.values() | sum(attribute='electricBikesAvailable') %}
     {%- set center_lat                  = stations.values() | map(attribute='latitude') | sum / total_stations %}
     {%- set center_lng                  = stations.values() | map(attribute='longitude') | sum / total_stations %}
+    {%- set sw_bounds_lat               = stations.values() | map(attribute='latitude') | min %}
+    {%- set sw_bounds_lng               = stations.values() | map(attribute='longitude') | min %}
+    {%- set ne_bounds_lat               = stations.values() | map(attribute='latitude') | max %}
+    {%- set ne_bounds_lng               = stations.values() | map(attribute='longitude') | max %}
 {%- else -%}
     {%- set total_stations              = 0 -%}
     {%- set available_stations          = 0 %}
@@ -89,6 +93,14 @@
                     zoom:   12
                 });
 
+        {%- if sw_bounds_lat and sw_bounds_lng and ne_bounds_lat and ne_bounds_lng %}
+                var bounds = new google.maps.LatLngBounds(
+                    new google.maps.LatLng({{ sw_bounds_lat }}, {{ sw_bounds_lng }}),
+                    new google.maps.LatLng({{ ne_bounds_lat }}, {{ ne_bounds_lng }})
+                );
+                map.fitBounds(bounds);
+        {%- endif %}
+
         {%- if stations %}
             {%- for kiosk_id, station in stations.items() %}
 
@@ -140,7 +152,6 @@
                         map,
                         shouldFocus:    true
                     });
-                    map.setZoom(14)
                     infowindows[{{ kiosk_id }}] = infowindow_{{ kiosk_id }};
                 });
                 markers[{{ kiosk_id }}] = marker_{{ kiosk_id }};
@@ -175,7 +186,6 @@
                     var crd = pos.coords;
                     var center_gps  = { lat: crd.latitude, lng: crd.longitude };
                     map.panTo(center_gps);
-                    map.setZoom(14);
 
                     const infowindow_gps    = new google.maps.InfoWindow({
                         content:    '<h4>Your Location</h4>'
