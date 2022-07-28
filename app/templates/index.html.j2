@@ -57,11 +57,11 @@
         <title>
             PHL
     {%- if search and total_stations > 1 %}
-            / {{ search[0:15] | safe }}{%- if search | length > 15 %}...{%- endif %}
+            / {{ search | safe | truncate(15, True, '...') }}
     {%- else %}
         {%- if total_stations == 1 %}
             {%- for kiosk_id, station in stations.items() %}
-            / {{ station['name'][0:20] | safe }}{%- if station['name'] | length > 20 %}...{%- endif %}
+            / {{ station['name'] | safe | truncate(20, True, '...') }}
             {%- endfor %}
         {%- endif %}
     {%- endif %}
