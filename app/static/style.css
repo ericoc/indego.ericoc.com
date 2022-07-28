@@ -1,35 +1,40 @@
-@font-face {
-    font-family:    'Rock Salt';
-    src:            url('/static/RockSalt-Regular.ttf');
-}
-
 html, body, table {
-    font-family:    Open Sans, sans-serif;
+    font-family:        'Open Sans', sans-serif;
 }
 
 h1 {
-    font-family:    'Rock Salt', cursive;
-    font-size:      1.5em;
+    font-size:          2em;
+    transform:          scale(-1, 1);
+    border-color:       #09f;
+    border-style:       solid;
+    border-width:       0.01em;
+}
+
+h2 {
+    font-size:          1.1em;
+}
+
+h3, h4 {
+    font-size:          1em;
 }
 
 h1, h2, h3, h4 {
-    font-weight:    normal;
-    margin:         0;
-    padding:        0;
+    font-weight:        normal;
+    margin:             0;
+    padding:            0;
 }
 
-
 #logo {
-    font-size:          1.75em;
-    padding-left:       0.25em;
+    padding-left:       0.5em;
+    padding-right:      0.5em;
 }
 
 #logo:hover {
-    transform:          rotate(45deg);
+    transform:          rotate(25deg);
 }
 
 #logo:active {
-    transform:          rotate(75deg);
+    transform:          rotate(45deg);
 }
 
 @media (prefers-reduced-motion) {
@@ -38,8 +43,9 @@ h1, h2, h3, h4 {
     }
 }
 
-#logo, #totals, #search, h1, button, form {
-    display:            inline-block;
+h1, #logo, #totals, #search, button, input, form {
+    display:        inline-block;
+    background-color:   inherit;
 }
 
 a {
@@ -50,7 +56,7 @@ a:link, a:visited {
     color:              #0082cb;
 }
 
-a:hover, a:active {
+a:hover, a:active, #station-list li:target a, #station-list li.unavailable a {
     color:              #006;
 }
 
@@ -60,36 +66,31 @@ a:hover, a:active {
 }
 
 #station-list li {
-    text-align: right;
-    list-style:                 none;
-    border-bottom-color:       #0082cb;
-    border-bottom-style:       dotted;
-    border-bottom-width:       0.1em;
+    list-style:         none;
+    text-align:         right;
 }
 
-#station-list li:nth-child(2n), input[type='submit'], button {
+.station-link, .graph {
+    display:            block;
+    font-size:          0.8em;
+}
+
+#station-list li:nth-child(2n) {
     background-color:   #ddd;
 }
 
 #station-list li:target {
     list-style:         '🚲 ';
     font-weight:        bold;
-    background-color:   #94d60a;
 }
 
-.unavailable {
+#station-list li.unavailable {
     background-color:   orange;
 }
 
 .graph {
-    font-size:          0.8em;
-    text-align:         left;
-    vertical-align:     middle;
-}
-
-.table-graph {
-    font-size:          1.25em;
-    text-align:         center;
+    padding-top:        0.5em;
+    padding-bottom:     0.5em;
 }
 
 .bikes {
@@ -97,36 +98,30 @@ a:hover, a:active {
 }
 
 .docks {
-    color:              #444;
-}
-
-.emoji {
-    color:              #000;
-    font-size:          1.25em;
-    letter-spacing:     0.25em;
+    color:              #666;
 }
 
 #map-canvas, table, input, button {
-    border-color:       #0082cb;
+    border-color:       #09f;
     border-style:       solid;
-    border-width:       0.25em;
+    border-width:       0.1em;
 }
 
 #left-box {
     float:              left;
     position:           fixed;
-    height:             90vh;
-    width:              55vw;
+    height:             95vh;
+    width:              67vw;
 }
 
 #right-box {
     float:              right;
-    width:              42vw;
+    width:              32vw;
 }
 
 #map-canvas {
     margin-top:         0.5em;
-    height:             75vh;
+    height:             90vh;
 }
 
 #flashes {
@@ -134,12 +129,13 @@ a:hover, a:active {
     font-weight:        bold;
 }
 
-.flash-fatal {
+.flash-fatal, #map-canvas .unavailable {
+    font-weight:        bold;
     color:              #a00;
 }
 
 @media (max-width: 1024px) {
-    h1, h2, h3, #left-box, #map-canvas, #right-box, #search, #station-list, #totals, #flashes {
+    #left-box, #map-canvas, #right-box, #search, #station-list, #totals, #flashes {
         clear:          both;
         display:        inline-block;
         float:          none;
@@ -151,7 +147,7 @@ a:hover, a:active {
 
 @media (prefers-color-scheme: dark) {
 
-    body, table li:target a, li, input[type='text'], #station-list li:nth-child(2n), #map-canvas .gm-style-iw, #map-canvas .gm-style {
+    body, table li:target a, li, input, #station-list li:nth-child(2n), #map-canvas .gm-style-iw, #map-canvas .gm-style {
         background-color:   #444;
         color:              #fff;
     }
@@ -159,12 +155,6 @@ a:hover, a:active {
     #map-canvas .gm-style-iw div {
         overflow:           hidden !important;
         padding:            0.5em;
-    }
-
-    #station-list li:target {
-        list-style:         '🚲 ';
-        font-weight:        bold;
-        background-color:   #94d60a;
     }
 
     .docks {
