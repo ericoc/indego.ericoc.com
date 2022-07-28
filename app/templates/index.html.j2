@@ -93,12 +93,14 @@
                     zoom:   12
                 });
 
-        {%- if sw_bounds_lat and sw_bounds_lng and ne_bounds_lat and ne_bounds_lng %}
+        {%- if total_stations > 1 and sw_bounds_lat and sw_bounds_lng and ne_bounds_lat and ne_bounds_lng %}
                 var bounds = new google.maps.LatLngBounds(
                     new google.maps.LatLng({{ sw_bounds_lat }}, {{ sw_bounds_lng }}),
                     new google.maps.LatLng({{ ne_bounds_lat }}, {{ ne_bounds_lng }})
                 );
                 map.fitBounds(bounds);
+        {%- elif total_stations == 1 %}
+                map.setZoom(18);
         {%- endif %}
 
         {%- if stations %}
