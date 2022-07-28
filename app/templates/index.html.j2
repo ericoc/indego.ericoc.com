@@ -17,10 +17,6 @@
     {%- set total_electric_available    = stations.values() | sum(attribute='electricBikesAvailable') %}
     {%- set center_lat                  = stations.values() | map(attribute='latitude') | sum / total_stations %}
     {%- set center_lng                  = stations.values() | map(attribute='longitude') | sum / total_stations %}
-    {%- set sw_bounds_lat               = stations.values() | map(attribute='latitude') | min %}
-    {%- set sw_bounds_lng               = stations.values() | map(attribute='longitude') | min %}
-    {%- set ne_bounds_lat               = stations.values() | map(attribute='latitude') | max %}
-    {%- set ne_bounds_lng               = stations.values() | map(attribute='longitude') | max %}
 {%- else -%}
     {%- set total_stations              = 0 -%}
     {%- set available_stations          = 0 %}
@@ -78,21 +74,17 @@
             var map;
             function initMap() {
 
-                var center = { 
-                    lat:    {{ center_lat }},
-                    lng:    {{ center_lng }}
-                };
-
                 // Create the map with its center point and zoom
-                map   = new google.maps.Map(document.getElementById('map-canvas'), {
-                    center: center, 
-                    zoom:   12
+                map = new google.maps.Map(document.getElementById('map-canvas'), {
+                    center:     { lat: {{ center_lat }}, lng: {{ center_lng }} },
+                    zoom:       12,
+                    maxZoom:    18
                 });
 
-        {%- if total_stations > 1 and sw_bounds_lat and sw_bounds_lng and ne_bounds_lat and ne_bounds_lng %}
+        {%- if total_stations > 1 %}
                 var bounds = new google.maps.LatLngBounds(
-                    new google.maps.LatLng({{ sw_bounds_lat }}, {{ sw_bounds_lng }}),
-                    new google.maps.LatLng({{ ne_bounds_lat }}, {{ ne_bounds_lng }})
+                    new google.maps.LatLng({{ stations.values() | map(attribute='latitude') | min }}, {{ stations.values() | map(attribute='longitude') | min }}),
+                    new google.maps.LatLng({{ stations.values() | map(attribute='latitude') | max }}, {{ stations.values() | map(attribute='longitude') | max }})
                 );
                 map.fitBounds(bounds);
         {%- elif total_stations == 1 %}
@@ -204,7 +196,7 @@
                         });
                     });
                     google.maps.event.trigger(marker_gps, 'click');
-
+                    map.setZoom(18);
                 };
 
                 function error(err) {
