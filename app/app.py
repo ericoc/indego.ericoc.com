@@ -21,6 +21,7 @@ Define a function to connect to the PostgreSQL database (using read-only credent
 """
 def dbc(username=secrets.db_creds['username'], password=secrets.db_creds['password']):
     try:
+        print('dbc connecting')
         return psycopg2.connect(
                                 user        = username,
                                 password    = password,
@@ -38,7 +39,7 @@ def dbc(username=secrets.db_creds['username'], password=secrets.db_creds['passwo
 """
 Define a function to find stations, in the latest database entry, based on whatever search string
 """
-def find_stations(search=None, field=None):
+def find_stations(added=None, search=None, field=None):
 
     try:
 
@@ -46,11 +47,13 @@ def find_stations(search=None, field=None):
         conn = dbc()
         with conn.cursor() as cur:
 
-            # Create a query to find the latest database row that is not null, to get the latest added data time
-            added_query     = """SELECT MAX(added) FROM indego WHERE data IS NOT NULL;"""
-            cur.execute(added_query)
-            latest_added    = cur.fetchone()
-            added           = latest_added[0]
+            # If no "added" time was given,
+            # create a query to find the latest database row that is not null, to get the latest added data time
+            if not added:
+                added_query     = """SELECT MAX(added) FROM indego WHERE data IS NOT NULL;"""
+                cur.execute(added_query)
+                latest_added    = cur.fetchone()
+                added           = latest_added[0]
 
             if not search and not field:
                 default_query   = """SELECT station->'properties'->'id' "kioskId", station->'properties' "properties" \
@@ -107,6 +110,7 @@ def find_stations(search=None, field=None):
 
     # Close the database connection
     finally:
+        print('closing: ', conn)
         conn.close()
 
 """
@@ -140,6 +144,7 @@ def fetch_chart_data(id=None):
 
     # Close the database connection
     finally:
+        print('closing: ', conn)
         conn.close()
 
 """
@@ -154,8 +159,20 @@ def index():
 @app.route('/search/<path:search>', methods=['GET'])
 def search_stations(search=None, googlemaps_api_key=secrets.googlemaps_api_key):
 
+    # Connect to the database and get the latest added row's time
+    conn = dbc()
+    with conn.cursor() as cur:
+        query   = """SELECT MAX(added) FROM indego WHERE data IS NOT NULL;"""
+        cur.execute(query)
+        results = cur.fetchone()
+        added   = results[0]
+    print('closing: ', conn)
+    conn.close()
+
+    print(f"added: {added}")
+
     # Get and count results, or respond using a 404 if no stations were found
-    stations    = find_stations(search=search)
+    stations    = find_stations(added=added, search=search)
     if stations:
         code        = 200
         count       = len(stations)
@@ -168,6 +185,7 @@ def search_stations(search=None, googlemaps_api_key=secrets.googlemaps_api_key):
     # Return Jinja2 template listing stations, and HTTP header with the result count
     r   = make_response(
             render_template('index.html.j2',
+                added               = added,
                 stations            = stations,
                 googlemaps_api_key  = googlemaps_api_key
             ), code

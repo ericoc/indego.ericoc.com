@@ -65,6 +65,10 @@ a:hover, a:active, #station-list li:target a, #station-list li.unavailable a {
     font-size:          0.8em;
 }
 
+#added {
+    font-style:         italic;
+}
+
 #station-list li {
     list-style:         none;
     text-align:         right;
@@ -121,7 +125,7 @@ a:hover, a:active, #station-list li:target a, #station-list li.unavailable a {
 
 #map-canvas {
     margin-top:         0.5em;
-    height:             90vh;
+    height:             85vh;
 }
 
 #flashes {

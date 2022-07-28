@@ -268,8 +268,9 @@
             <div id="map-canvas"></div>
     {%- endif %}
     {%- if added %}
-            <p>
+            <p id="added">
                 <code>
+                    as of:
                     {{ added }}
                 </code>
             </p>
@@ -285,11 +286,11 @@
                             {{ station['name'] | safe }}
                             <div class="graph">
                                 {%- set non_electric = station['bikesAvailable'] - station['electricBikesAvailable'] %}
-                                <span title="{{ non_electric }} bikes" class="{{ bikes_css_class }}">
+                                <span title="{{ non_electric }} bike{% if non_electric != 1 %}s{% endif %}" class="{{ bikes_css_class }}">
                                     {{- graph(non_electric, bikes_character) -}}
-                                </span><span title="{{ station['electricBikesAvailable'] }} electric bikes" class="{{ electric_css_class }}">
+                                </span><span title="{{ station['electricBikesAvailable'] }} electric bike{% if station['electricBikesAvailable'] != 1 %}s{% endif %}" class="{{ electric_css_class }}">
                                     {{- graph(station["electricBikesAvailable"], bikes_character) -}}
-                                </span><span title="{{ station['docksAvailable'] }} docks" class="{{ docks_css_class }}">
+                                </span><span title="{{ station['docksAvailable'] }} dock{% if station['docksAvailable'] != 1 %}s{% endif %}" class="{{ docks_css_class }}">
                                     {{- graph(station["docksAvailable"], docks_character) -}}
                                 </span>
                             </div>
