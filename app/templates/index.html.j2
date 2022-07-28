@@ -67,10 +67,6 @@
     {%- endif %}
             / {{ total_stations }} station{% if total_stations != 1 %}s{% endif %}
         </title>
-    {%- if googlemaps_api_key %}
-        <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key={{ googlemaps_api_key }}&callback=initMap" async defer>
-        </script>
-    {%- endif %}
         <script type="text/javascript">
     {%- if googlemaps_api_key %}
 
@@ -242,6 +238,9 @@
     {%- endif %}
 
         </script>
+    {%- if googlemaps_api_key %}
+        <script async defer src="https://maps.googleapis.com/maps/api/js?key={{ googlemaps_api_key }}&callback=initMap"></script>
+    {%- endif %}
     </head>
     <body>
         <div id="left-box">
