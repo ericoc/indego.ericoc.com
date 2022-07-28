@@ -268,11 +268,11 @@
     {%- if googlemaps_api_key %}
             <div id="map-canvas"></div>
     {%- endif %}
-    {%- if added %}
+    {%- if added_web and added_since %}
             <p id="added">
-                <code>
+                <code title="As of: {{ added_web.strftime('%a, %d %b %Y @ %I:%M:%S %p %Z') }} ({{ added_since }} ago)">
                     as of:
-                    {{ added.strftime('%a, %d %b %Y @ %I:%M:%S %p %Z') }}
+                    {{ added_web.strftime('%a, %d %b %Y @ %I:%M:%S %p %Z') }}
                 </code>
             </p>
     {%- endif %}

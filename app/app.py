@@ -196,15 +196,16 @@ def search_stations(search=None, googlemaps_api_key=secrets.googlemaps_api_key):
     print('closing: ', conn)
     conn.close()
 
-    print(f"added: {added}")
-
-    # Get results and respond using a 404 if no stations were found
-    stations = find_stations(added=added, search=search)
+    stations    = find_stations(added=added, search=search)
     if stations:
-        stations = dict(stations)
+        stations    = dict(stations)
+        tz          = pytz.timezone('US/Eastern')
+        added_web   = added.astimezone(tz)
+        added_since = datetime.datetime.now().astimezone(tz) - added_web
         r   = make_response(
                 render_template('index.html.j2',
-                    added               = added.astimezone(pytz.timezone('US/Eastern')),
+                    added_web           = added_web,
+                    added_since         = added_since,
                     stations            = stations,
                     googlemaps_api_key  = googlemaps_api_key
             )
