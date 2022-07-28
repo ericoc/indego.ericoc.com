@@ -5,24 +5,27 @@
 {%- endmacro %}
 {%- set bikes_character = '█' %}
 {%- set docks_character = '█' %}
-{%- set bikes_css_class = 'bikes' %}
-{%- set docks_css_class = 'docks' %}
+{%- set bikes_css_class     = 'bikes' %}
+{%- set docks_css_class     = 'docks' %}
+{%- set electric_css_class  = 'electric' %}
 {%- if stations is defined and stations is iterable and stations | length > 0 -%}
-    {%- set total_stations          = stations | length %}
-    {%- set available_stations      = stations.values() | selectattr('kioskPublicStatus', '==', 'Active') | list | length %}
-    {%- set unavailable_stations    = stations.values() | selectattr('kioskPublicStatus', '!=', 'Active') | list | length %}
-    {%- set total_bikes_available   = stations.values() | sum(attribute='bikesAvailable') %}
-    {%- set total_docks_available   = stations.values() | sum(attribute='docksAvailable') %}
-    {%- set center_lat              = stations.values() | map(attribute='latitude') | sum / total_stations %}
-    {%- set center_lng              = stations.values() | map(attribute='longitude') | sum / total_stations %}
+    {%- set total_stations              = stations | length %}
+    {%- set available_stations          = stations.values() | selectattr('kioskPublicStatus', '==', 'Active') | list | length %}
+    {%- set unavailable_stations        = stations.values() | selectattr('kioskPublicStatus', '!=', 'Active') | list | length %}
+    {%- set total_bikes_available       = stations.values() | sum(attribute='bikesAvailable') %}
+    {%- set total_docks_available       = stations.values() | sum(attribute='docksAvailable') %}
+    {%- set total_electric_available    = stations.values() | sum(attribute='electricBikesAvailable') %}
+    {%- set center_lat                  = stations.values() | map(attribute='latitude') | sum / total_stations %}
+    {%- set center_lng                  = stations.values() | map(attribute='longitude') | sum / total_stations %}
 {%- else -%}
-    {%- set total_stations          = 0 -%}
-    {%- set available_stations      = 0 %}
-    {%- set unavailable_stations    = 0 %}
-    {%- set total_bikes_available   = 0 %}
-    {%- set total_docks_available   = 0 %}
-    {%- set center_lat              = 39.9528 %}
-    {%- set center_lng              = -75.1635 %}
+    {%- set total_stations              = 0 -%}
+    {%- set available_stations          = 0 %}
+    {%- set unavailable_stations        = 0 %}
+    {%- set total_bikes_available       = 0 %}
+    {%- set total_docks_available       = 0 %}
+    {%- set total_electric_available    = 0 %}
+    {%- set center_lat                  = 39.9528 %}
+    {%- set center_lng                  = -75.1635 %}
 {%- endif -%}
 <!--
 {%- if new_stations %}
@@ -81,6 +84,7 @@
 
               // Begin marker {{ kiosk_id }}
                 {%- set station_name    = station['name'] | safe | replace("'", "\\'") | replace('"', '\\"') %}
+                {%- set non_electric    = station['bikesAvailable'] - station['electricBikesAvailable'] %}
                 {%- set address_full    = station['addressStreet'] + '<br>' + station['addressCity'] + ', ' + station['addressState'] +  ' ' + station['addressZipCode'] %}
             {%- if station['kioskPublicStatus'] != 'Active' %}
                 {%- set station_status  = '<span class="unavailable">' + station['kioskPublicStatus'] + '</span>' %}
@@ -94,11 +98,14 @@
                 contentString_{{ kiosk_id }}       += '</h4>';
                 contentString_{{ kiosk_id }}       += '<div class="graph">';
                 contentString_{{ kiosk_id }}       += '<a href="#{{ kiosk_id }}" target="popup" onclick="window.open(this.href,\'_self\'); window.open(\'{{ url_for('chart_station', chart_string=kiosk_id) }}\',\'popup\',\'width=800,height=500\'); return false;">';
-                contentString_{{ kiosk_id }}       += '<span class="{{ bikes_css_class }}">{{ graph(station["bikesAvailable"], bikes_character) }}</span>';
+                contentString_{{ kiosk_id }}       += '<span class="{{ bikes_css_class }}">{{ graph(non_electric, bikes_character) }}</span>';
+                contentString_{{ kiosk_id }}       += '<span class="{{ electric_css_class }}">{{ graph(station["electricBikesAvailable"], bikes_character) }}</span>';
+
                 contentString_{{ kiosk_id }}       += '<span class="{{ docks_css_class }}">{{ graph(station["docksAvailable"], docks_character) }}</span>';
                 contentString_{{ kiosk_id }}       += '</a>';
                 contentString_{{ kiosk_id }}       += '</div>';
-                contentString_{{ kiosk_id }}       += '<b>Bikes</b>: {{ station["bikesAvailable"] }}<br>';
+                contentString_{{ kiosk_id }}       += '<b>Bikes</b>: {{ station["bikesAvailable"] }} ';
+                contentString_{{ kiosk_id }}       += '({{ station["electricBikesAvailable"] }} electric)<br>';
                 contentString_{{ kiosk_id }}       += '<b>Docks</b>: {{ station["docksAvailable"] }} (of {{ station["totalDocks"] }})<br>';
                 contentString_{{ kiosk_id }}       += '<a href="https://www.google.com/maps/search/?api=1&query={{ station["latitude"] }},{{ station["longitude"] }}" target="_blank">';
                 contentString_{{ kiosk_id }}       += '{{ address_full }}';
@@ -225,8 +232,9 @@
                 <h2 title="{{ available_stations }} / {{ total_stations }} station{% if total_stations != 1 %}s{% endif %} available">
                     {{ available_stations }} / {{ total_stations }} station{% if total_stations != 1 %}s{% endif %} available
                 </h2>
-                <h3 title="{{ total_bikes_available }} bicycle{% if total_bikes_available != 1 %}s{% endif %} available">
+                <h3 title="{{ total_bikes_available }} bicycle{% if total_bikes_available != 1 %}s{% endif %} available ({{ total_electric_available }} electric)">
                     {{ total_bikes_available }} bicycle{% if total_bikes_available != 1 %}s{% endif %} available
+                    ({{ total_electric_available }} electric)
                 </h3>
                 <h3 title="{{ total_docks_available }} dock{% if total_docks_available != 1 %}s{% endif %} available">
                     {{ total_docks_available }} dock{% if total_docks_available != 1 %}s{% endif %} available
@@ -276,8 +284,11 @@
                         <a href="#{{ kiosk_id }}" onclick="markerOpen({{ kiosk_id }});" title="{{ station['name'] | safe }}" class="station-link">
                             {{ station['name'] | safe }}
                             <div class="graph">
-                               <span title="{{ station['bikesAvailable'] }} bikes" class="{{ bikes_css_class }}">
-                                    {{- graph(station["bikesAvailable"], bikes_character) -}}
+                                {%- set non_electric = station['bikesAvailable'] - station['electricBikesAvailable'] %}
+                                <span title="{{ non_electric }} bikes" class="{{ bikes_css_class }}">
+                                    {{- graph(non_electric, bikes_character) -}}
+                                </span><span title="{{ station['electricBikesAvailable'] }} electric bikes" class="{{ electric_css_class }}">
+                                    {{- graph(station["electricBikesAvailable"], bikes_character) -}}
                                 </span><span title="{{ station['docksAvailable'] }} docks" class="{{ docks_css_class }}">
                                     {{- graph(station["docksAvailable"], docks_character) -}}
                                 </span>

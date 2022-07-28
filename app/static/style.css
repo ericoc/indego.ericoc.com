@@ -84,10 +84,6 @@ a:hover, a:active, #station-list li:target a, #station-list li.unavailable a {
     font-weight:        bold;
 }
 
-#station-list li.unavailable {
-    background-color:   orange;
-}
-
 .graph {
     padding-top:        0.5em;
     padding-bottom:     0.5em;
@@ -95,6 +91,10 @@ a:hover, a:active, #station-list li:target a, #station-list li.unavailable a {
 
 .bikes {
     color:              #0082cb;
+}
+
+.electric {
+    color:              #e4d00a;
 }
 
 .docks {
@@ -129,7 +129,7 @@ a:hover, a:active, #station-list li:target a, #station-list li.unavailable a {
     font-weight:        bold;
 }
 
-.flash-fatal, #map-canvas .unavailable {
+.flash-fatal, #map-canvas .unavailable, #station-list li.unavailable a {
     font-weight:        bold;
     color:              #a00;
 }
