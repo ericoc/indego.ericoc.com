@@ -299,11 +299,11 @@
             </p>
     {%- endif %}
         </div>
-    {%- if total_stations > 0 %}
         <div id="right-box">
+    {%- if total_stations > 0 %}
             <div id="station-list" title="Stations">
                 <ol>
-            {%- for kiosk_id, station in stations.items() %}
+        {%- for kiosk_id, station in stations.items() %}
                     <li id="{{ kiosk_id }}" value="{{ kiosk_id }}"{% if station['kioskPublicStatus'] != 'Active' %} class="unavailable"{% endif %}>
                         <a href="#{{ kiosk_id }}" onclick="markerOpen({{ kiosk_id }});" title="{{ station['name'] | safe }}" class="station-link">
                             {{ station['name'] | safe }}
@@ -319,15 +319,15 @@
                             </div>
                         </a>
                     </li>
-            {%- endfor %}
+        {%- endfor %}
                 </ol>
             </div>
+    {%- endif %}
             <p>
                 <code>
                     <a href="https://github.com/ericoc/indego.ericoc.com" target="_blank">https://github.com/ericoc/indego.ericoc.com</a>
                 </code>
             </p>
         </div>
-    {%- endif %}
     </body>
 </html>
