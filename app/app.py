@@ -206,6 +206,7 @@ def search_stations(search=None, googlemaps_api_key=secrets.googlemaps_api_key):
                 render_template('index.html.j2',
                     added_web           = added_web,
                     added_since         = added_since,
+                    search              = search,
                     stations            = stations,
                     googlemaps_api_key  = googlemaps_api_key
             )

@@ -51,7 +51,17 @@
         <link rel="shortcut icon" href="{{ url_for('static', filename='icon.png') }}">
         <link rel="apple-touch-icon" href="{{ url_for('static', filename='icon.png') }}">
         <title>
-            Philadelphia Indego Bicycle Stations
+            PHL 🚲
+    {%- if search and total_stations > 1 %}
+            / {{ search[0:15] | safe }}{%- if search | length > 15 %}...{%- endif %}
+    {%- else %}
+        {%- if total_stations == 1 %}
+            {%- for kiosk_id, station in stations.items() %}
+            / {{ station['name'][0:20] | safe }}{%- if station['name'] | length > 20 %}...{%- endif %}
+            {%- endfor %}
+        {%- endif %}
+    {%- endif %}
+            / {{ total_stations }} station{% if total_stations != 1 %}s{% endif %}
         </title>
     {%- if googlemaps_api_key %}
         <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key={{ googlemaps_api_key }}&callback=initMap" async defer>
