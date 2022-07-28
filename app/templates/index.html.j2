@@ -245,8 +245,9 @@
                 <form method="post" action="{{ url_for('search_form') }}">
                     <input type="text" name="search">
                     <i>
-                        (i.e. "<a href="{{ url_for('search_stations', search='fairmount') }}">fairmount</a>"
-                        or "<a href="{{ url_for('search_stations', search='19107') }}">19107</a>")
+                        (i.e. "<a href="{{ url_for('search_stations', search='Broad') }}">Broad</a>",
+                        "<a href="{{ url_for('search_stations', search='19107') }}">19107</a>",
+                        or "<a href="{{ url_for('search_stations', search='Market' )}}">Market</a>")
                     </i>
                     <input type="submit" value="Search!">
                 </form>
@@ -271,7 +272,7 @@
             <p id="added">
                 <code>
                     as of:
-                    {{ added }}
+                    {{ added.strftime('%a, %d %b %Y @ %I:%M:%S %p %Z') }}
                 </code>
             </p>
     {%- endif %}

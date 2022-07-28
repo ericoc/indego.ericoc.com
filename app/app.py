@@ -1,11 +1,13 @@
 import re
 import secrets
+import datetime
+import pytz
 import psycopg2
 from psycopg2.extensions import AsIs
-from flask import Flask, make_response, redirect, render_template, request, send_from_directory, url_for
+from flask import Flask, flash, make_response, redirect, render_template, request, send_from_directory, url_for
 
 """
-Initialize Flask app
+Initialize
 """
 app = Flask(__name__)
 app.config.from_pyfile('config.py')
@@ -17,9 +19,38 @@ if __name__ == '__main__':
 #import models
 
 """
+Error handling
+"""
+@app.errorhandler(400)
+def bad_request(message):
+    return error(message=message, category='fatal', code=400)
+
+@app.errorhandler(404)
+def page_not_found(message):
+    return error(message=message, code=404)
+
+@app.errorhandler(500)
+def internal_server_error(message):
+    return error(message=message, category='fatal', code=500)
+
+@app.errorhandler(501)
+def method_not_implemented(message):
+    return error(message=message, category='fatal', code=501)
+
+@app.errorhandler(503)
+def service_unavailable(message):
+    return error(message=message, category='fatal', code=503)
+
+def error(message='Sorry, but there was an error. Please try again or come back later.', category='warn', code=500):
+    flash(message, category)
+    return make_response(render_template('index.html.j2'), code)
+
+
+"""
 Define a function to connect to the PostgreSQL database (using read-only credentials)
 """
 def dbc(username=secrets.db_creds['username'], password=secrets.db_creds['password']):
+
     try:
         print('dbc connecting')
         return psycopg2.connect(
@@ -29,32 +60,28 @@ def dbc(username=secrets.db_creds['username'], password=secrets.db_creds['passwo
                                 port        = 5432,
                                 database    = 'indego'
                 )
-
-    # Print (and return) any exception
     except Exception as e:
         print(f"\n\ndbc:\n{e}\n\n")
         return e
 
 
 """
-Define a function to find stations, in the latest database entry, based on whatever search string
+Define a function to find stations, at whatever time, based on whatever search string
 """
 def find_stations(added=None, search=None, field=None):
 
     try:
-
-        # Connect to the database
         conn = dbc()
         with conn.cursor() as cur:
 
-            # If no "added" time was given,
-            # create a query to find the latest database row that is not null, to get the latest added data time
+            # If no "added" time was given, create/run query to find the latest database added time that does not have null data
             if not added:
                 added_query     = """SELECT MAX(added) FROM indego WHERE data IS NOT NULL;"""
                 cur.execute(added_query)
                 latest_added    = cur.fetchone()
                 added           = latest_added[0]
 
+            # Return all stations by default
             if not search and not field:
                 default_query   = """SELECT station->'properties'->'id' "kioskId", station->'properties' "properties" \
                                      FROM indego, jsonb_array_elements(indego.data->'features') station \
@@ -148,7 +175,7 @@ def fetch_chart_data(id=None):
         conn.close()
 
 """
-Define primary Flask web route to allow searching/displaying mapped stations, from the latest row in the database
+Define primary Flask web routes to allow searching/displaying mapped stations, from the latest row in the database
 """
 @app.route('/', methods=['GET'])
 def index():
@@ -159,7 +186,7 @@ def index():
 @app.route('/search/<path:search>', methods=['GET'])
 def search_stations(search=None, googlemaps_api_key=secrets.googlemaps_api_key):
 
-    # Connect to the database and get the latest added row's time
+    # Connect to the database and get the latest added time
     conn = dbc()
     with conn.cursor() as cur:
         query   = """SELECT MAX(added) FROM indego WHERE data IS NOT NULL;"""
@@ -171,31 +198,26 @@ def search_stations(search=None, googlemaps_api_key=secrets.googlemaps_api_key):
 
     print(f"added: {added}")
 
-    # Get and count results, or respond using a 404 if no stations were found
-    stations    = find_stations(added=added, search=search)
+    # Get results and respond using a 404 if no stations were found
+    stations = find_stations(added=added, search=search)
     if stations:
-        code        = 200
-        count       = len(stations)
-        stations    = dict(stations)
-    else:
-        code        = 404
-        count       = 0
-        stations    = None
-
-    # Return Jinja2 template listing stations, and HTTP header with the result count
-    r   = make_response(
-            render_template('index.html.j2',
-                added               = added,
-                stations            = stations,
-                googlemaps_api_key  = googlemaps_api_key
-            ), code
+        stations = dict(stations)
+        r   = make_response(
+                render_template('index.html.j2',
+                    added               = added.astimezone(pytz.timezone('US/Eastern')),
+                    stations            = stations,
+                    googlemaps_api_key  = googlemaps_api_key
+            )
         )
-    r.headers.set('X-Station-Count', count)
-    return r
+        r.headers.set('X-Station-Count', len(stations))
+        return r
+
+    return page_not_found('Sorry, but no stations were found!')
+
 
 """
 Define Flask route that allows searching via the POST method search form
-This simply redirects to /search/<search_query> and handled by the above (search_stations) function
+This redirects to /search/<search_query> and handled by the above (search_stations) function
 """
 @app.route('/search', methods=['POST'])
 def search_form():
@@ -204,24 +226,20 @@ def search_form():
 
 """
 Define Flask route for showing charts of historical bicycle availability for stations
-This is usually shown within a pop-up, from the main index page
+This is usually shown within a pop-up for a single station, from the main index page
+Also works visiting /chart/<search string> (i.e. /chart/Broad) though not obvious
 """
 @app.route('/chart/<string:chart_string>', methods=['GET'])
 def chart_station(chart_string=None):
 
-    # Find stations based on route search string and return any results using a 200 response, otherwise 404
-    chart_results       = find_stations(search=chart_string)
+    chart_results = find_stations(search=chart_string)
     if chart_results:
-        chart_stations  = chart_results
-        code            = 200
-    else:
-        chart_stations  = None
-        code            = 404
+        return render_template('chart.html.j2',
+                                    chart_stations  = chart_results,
+                                    chart_string    = chart_string
+                              )
 
-    return render_template('chart.html.j2',
-                                chart_stations  = chart_stations,
-                                chart_string    = chart_string
-                          ), code
+    return page_not_found('Sorry, but no stations were found!')
 
 
 """
@@ -230,18 +248,13 @@ Define Flask route for the front-end JavaScript necessary for charts
 @app.route('/chartjs/<string:chartjs_string>.js', methods=['GET'])
 def chartjs_station(chartjs_string=None):
 
-    # Find any stations based on route search string and respond using a 200, or 404 if none found
-    chartjs_results         = find_stations(search=chartjs_string)
+    chartjs_results = find_stations(search=chartjs_string)
     if chartjs_results:
-        chartjs_stations    = chartjs_results
-        code                = 200
-    else:
-        chartjs_stations    = None
-        code                = 404
+        r = make_response(render_template('chart.js.j2', chartjs_stations=chartjs_results))
+        r.headers['Content-Type'] = 'text/javascript'
+        return r
 
-    r   = make_response(render_template('chart.js.j2', chartjs_stations=chartjs_stations), code)
-    r.headers['Content-Type'] = 'text/javascript'
-    return r
+    return page_not_found('Sorry, but no stations were found!')
 
 
 """
@@ -250,22 +263,18 @@ Define Flask route for generating the JavaScript using PostgreSQL data for chart
 @app.route('/chartdata/<int:id>.js', methods=['GET'])
 def chartdata_station(id=None):
 
-    # Find single station based on route kioskId (cannot be a string)
-    chartdata_result        = find_stations(search=id, field='kioskId')
+    chartdata_result = find_stations(search=id, field='kioskId')
+    if chartdata_result[0][1]['kioskId'] == id:
+        r   = make_response(
+                render_template('chartdata.js.j2',
+                                    station     = chartdata_result[0][1],
+                                    chart_data  = fetch_chart_data(id)
+                                )
+            )
+        r.headers['Content-Type'] = 'text/javascript'
+        return r
 
-    # Respond using a 200 if the one station was found and has historical data, otherwise 404
-    if chartdata_result:
-        chartdata_station   = chartdata_result[0][1]
-        chart_data          = fetch_chart_data(id)
-        code                = 200
-    else:
-        chartdata_station   = None
-        chart_data          = None
-        code                = 404
-
-    r   = make_response(render_template('chartdata.js.j2', station=chartdata_station, chart_data=chart_data), code)
-    r.headers['Content-Type'] = 'text/javascript'
-    return r
+    return page_not_found('Sorry, but no stations were found!')
 
 
 """

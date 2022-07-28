@@ -139,7 +139,7 @@ a:hover, a:active, #station-list li:target a, #station-list li.unavailable a {
 }
 
 @media (max-width: 1024px) {
-    #left-box, #map-canvas, #right-box, #search, #station-list, #totals, #flashes {
+    #left-box, #map-canvas, #right-box, #search, #station-list, #totals, #flashes, p {
         clear:          both;
         display:        inline-block;
         float:          none;
