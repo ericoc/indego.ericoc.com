@@ -119,9 +119,9 @@ def _find_stations(search=None, field=None):
         else:
             final_query = base_query.filter(
                 or_(text(
-                    f"station->'properties'->>'name' LIKE '%%{search}%%'"
+                    f"station->'properties'->>'name' ILIKE '%%{search}%%'"
                 ), text(
-                    f"station->'properties'->>'addressStreet' LIKE '%%{search}%%'")
+                    f"station->'properties'->>'addressStreet' ILIKE '%%{search}%%'")
                 )
             )
 
