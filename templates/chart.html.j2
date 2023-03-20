@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="author" content="Eric O'Callaghan">
+        <meta name="description" content="Philadelphia Indego Bikes">
+        <meta name="keywords" content="ericoc, indego, philadelphia, philly, bikes, bikeshare, bicycles, charts, graphs">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta property="og:type" content="website">
+        <meta property="og:site_name" content="Philadelphia Indego Bike Share Charts">
+        <meta property="og:title" content="Charts for the Philadelphia Indego Bike Share">
+        <meta property="og:description" content="Charts of available bicycles and docks for Philadlephia Indego bicycle-share stations.">
+        <meta property="og:url" content="{{ url_for('chart_station', chart_string=chart_string, _external=True) }}">
+        <meta property="og:image" content="{{ url_for('static', filename='icon.png', _external=True) }}">
+        <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet" type="text/css">
+        <link rel="shortcut icon" href="{{ url_for('static', filename='icon.png') }}">
+        <link rel="apple-touch-icon" href="{{ url_for('static', filename='icon.png') }}">
+        <title>Indego Bikes!</title>
+{%- if chart_stations and chart_stations is iterable and chart_string %}
+        <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/highcharts.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/exporting.js') }}"></script>
+    {%- for chart_station in chart_stations %}
+        <script src="{{ url_for('chartdata_station', id=chart_station['kioskId']) }}"></script>
+    {%- endfor %}
+        <script src="{{ url_for('chartjs_station', chartjs_string=chart_string) }}"></script>
+{%- endif %}
+    </head>
+    <body>
+{%- if chart_stations and chart_stations is iterable -%}
+    {%- for chart_station in chart_stations %}
+        <div id="bikesgraph_{{ chart_station['kioskId'] }}"></div>
+        {%- if not loop.last -%}<br>{%- endif -%}
+    {%- endfor %}
+{%- else %}
+        Station not found.
+{%- endif %}
+    </body>
+</html>
