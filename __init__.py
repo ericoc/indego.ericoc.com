@@ -75,12 +75,26 @@ def _latest_added():
     """Find latest added station timestamp where data is not null"""
     return db_session.query(
         func.max(Indego.added)
+    ).filter(
+        Indego.data is not None
     ).first()[0]
 
 
 def _find_stations(search=None, field=None):
     """Allow searching stations from the latest database row"""
 
+    base_query = db_session.query(
+        text("station->'properties' \"properties\"")
+    ).select_from(
+        Indego,
+        func.jsonb_array_elements(
+            Indego.data['features']
+        ).alias('station')
+    ).filter_by(
+        added=g.latest_added
+    )
+    final_query = None
+    
     # Perform any search requested
     if search:
 
@@ -97,49 +111,24 @@ def _find_stations(search=None, field=None):
 
         # Search specific field values, if requested
         if field:
-            return db_session.query(
-                text("station->'properties' \"properties\"")
-            ).select_from(
-                Indego,
-                func.jsonb_array_elements(
-                    Indego.data['features']
-                ).alias('station')
-            ).filter(
+            final_query = base_query.filter(
                 text(f"station->'properties'->>'{field}' = '{search}'")
-            ).filter_by(
-                added=g.latest_added
-            ).all()
+            )
 
         # Search the name and addressStreet fields for the string
-        return db_session.query(
-            text("station->'properties' \"properties\"")
-        ).select_from(
-            Indego,
-            func.jsonb_array_elements(
-                Indego.data['features']
-            ).alias('station')
-        ).filter(
-            or_(text(
-                f"station->'properties'->>'name' LIKE '%%{search}%%'"
-            ), text(
-                f"station->'properties'->>'addressStreet' LIKE '%%{search}%%'")
+        else:
+            final_query = base_query.filter(
+                or_(text(
+                    f"station->'properties'->>'name' LIKE '%%{search}%%'"
+                ), text(
+                    f"station->'properties'->>'addressStreet' LIKE '%%{search}%%'")
+                )
             )
-        ).filter_by(
-            added=g.latest_added
-        ).all()
 
-    # Last resort is to show all stations
-    return db_session.query(
-        text("station->'properties' \"properties\"")
-    ).select_from(
-        Indego,
-        func.jsonb_array_elements(
-            Indego.data['features']
-        ).alias('station')
-    ).filter_by(
-        added=g.latest_added
-    ).all()
-
+    # Last resort is to return all stations
+    if not final_query:
+        final_query = base_query
+    return final_query.all()
 
 
 @app.route('/', methods=['GET'])
@@ -159,23 +148,24 @@ def search_form():
 @app.route('/search/<path:search>', methods=['GET'])
 def search_stations(search=None):
     """Search stations"""
+
     results = _find_stations(search=search)
     if results:
+
         stations = []
         for result in results:
             for station in result:
                 stations.append(station)
+
         timezone = pytz.timezone('US/Eastern')
         added_web = g.latest_added.astimezone(timezone)
         added_since = g.now.astimezone(timezone) - added_web
         resp = make_response(
                 render_template(
                     'index.html.j2',
-                    added_since=added_since,
-                    added_web=added_web,
+                    added_since=added_since, added_web=added_web,
                     gmaps_api_key=app.config['GMAPS_API_KEY'],
-                    search=search,
-                    stations=stations
+                    search=search, stations=stations
                 )
             )
         resp.headers.set('X-Station-Count', len(stations))
@@ -196,7 +186,8 @@ def chart_station(chart_string=None):
     for chart_result in chart_results:
         for station in chart_result:
             chart_stations.append(station)
-    if chart_results:
+
+    if chart_stations:
         return render_template('chart.html.j2',
                                chart_stations=chart_stations,
                                chart_string=chart_string)
@@ -213,7 +204,7 @@ def chartjs_station(chartjs_string=None):
         for station in chartjs_result:
             chartjs_stations.append(station)
 
-    if chartjs_results:
+    if chartjs_stations:
         resp = make_response(
                 render_template(
                     'chart.js.j2',
