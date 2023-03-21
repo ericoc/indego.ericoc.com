@@ -93,13 +93,12 @@ def _find_stations(search=None, field=None):
     ).filter_by(
         added=g.latest_added
     )
-    final_query = None
-    
+    final_query = base_query
+
     # Perform any search requested
     if search:
 
-        # Check for numeric search query,
-        #   indicative of kiosk ID or zip/postal code (4 or 5 digits)
+        # Numeric search; kiosk ID or zip/postal code (4 or 5 digits)
         if not field and search.isnumeric():
             length = len(search)
 
@@ -111,23 +110,24 @@ def _find_stations(search=None, field=None):
 
         # Search specific field values, if requested
         if field:
-            final_query = base_query.filter(
-                text(f"station->'properties'->>'{field}' = '{search}'")
-            )
+            query_filter = text(f"station->'properties'->>'{field}' = '{search}'")
 
         # Search the name and addressStreet fields for the string
         else:
-            final_query = base_query.filter(
-                or_(text(
+            query_filter = or_(
+                text
+                (
                     f"station->'properties'->>'name' ILIKE '%%{search}%%'"
-                ), text(
-                    f"station->'properties'->>'addressStreet' ILIKE '%%{search}%%'")
+                ),
+                text
+                (
+                    f"station->'properties'->>'addressStreet' ILIKE '%%{search}%%'"
                 )
             )
 
-    # Last resort is to return all stations
-    if not final_query:
-        final_query = base_query
+        # Add any filter to the base query
+        final_query = base_query.filter(query_filter)
+
     return final_query.all()
 
 
