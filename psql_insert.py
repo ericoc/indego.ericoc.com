@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-'''
+"""
 https://indego.ericoc.com
 https://github.com/ericoc/indego.ericoc.com
 psql_insert.py
-'''
+"""
 import logging
-import sys
 
 import requests
 
@@ -20,24 +19,25 @@ logging.basicConfig(
     handlers=[logging.StreamHandler()]
 )
 
-# Make a request to the Indego bike-share API
-indego = requests.get(
-    headers={'Accept': 'application/json',
-             'User-Agent': 'Indego Python3 API Library - https://github.com/ericoc/indego-py-lib'},
-    timeout=30, url='https://kiosks.bicycletransit.workers.dev/phl'
-)
+# Set up an HTTPS request to the Indego bike-share JSON API
+ua = 'Indego Python3 API Library - https://github.com/ericoc/indego-py-lib'
+headers = {'Accept': 'application/json', 'User-Agent': ua}
+timeout = 30
+url = 'https://kiosks.bicycletransit.workers.dev/phl'
+indego = None
 
-# Proceed if it was a successful response
-if indego.status_code == 200:
+try:
+    # Make the requests for JSON data
+    indego = requests.get(headers=headers, timeout=timeout, url=url)
+    indego.raise_for_status()
 
-    # Create a new PostgreSQL database row,
-    #   using the data from the JSON API response
+    # Add PostgreSQL row, using JSON data from Indego API response
     new = Indego(data=indego.json())
     db_session.add(new)
     db_session.commit()
     logging.info('OK')
-    sys.exit(0)
 
 # Log and exit if something went wrong
-logging.fatal(indego)
-sys.exit(1)
+except Exception as err:
+    logging.exception(err)
+    logging.fatal(indego)
