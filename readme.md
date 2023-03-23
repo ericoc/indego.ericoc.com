@@ -24,7 +24,7 @@ visualizing the data from each station:
 
 ### API
 
-The API end-point that I make requests to is a GeoJSON file which lists every stations data and can be found here:
+The API end-point that I make requests to is a GeoJSON file which lists all station data and can be found here:
 - [https://kiosks.bicycletransit.workers.dev/phl](https://kiosks.bicycletransit.workers.dev/phl)
 
 The data is also available in GBFS format here:
