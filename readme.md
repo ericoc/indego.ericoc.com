@@ -40,7 +40,7 @@ which stores a complete copy of the HTTPS JSON response from the API every ten (
 - This prevents a slow page load and response time (i.e. poor performance) on every request to my website
 - The unfortunate side effect is that I may be showing stale data, up to ten minutes old, assuming everything is working correctly
 
-I have been storing the data in PostgreSQL since mid-2019 and have over 168,000 rows since that time (as of mid-2022, approx. ~3 years):
+I have been storing the data in PostgreSQL since mid-2019 and have over 202,000 rows since that time (as of mid-2023, approx. ~4 years):
 
 ```
 indego=# select now();
@@ -61,8 +61,7 @@ indego=#
 
 ### Maps
 
-The stations are mapped using their GPS coordinates from the GeoJSON response in combination with the:
-- [Google Maps JavaScript API](https://developers.google.com/maps/documentation/javascript/)
+The stations are mapped using their GPS coordinates from the GeoJSON response in combination with the [Google Maps JavaScript API](https://developers.google.com/maps/documentation/javascript/).
 
 The button to locate yourself on the map relies upon the JavaScript Geolocation API:
 - [https://www.w3.org/TR/geolocation/](https://www.w3.org/TR/geolocation/)
@@ -70,8 +69,7 @@ The button to locate yourself on the map relies upon the JavaScript Geolocation 
 
 ### Charts
 
-A neat little "Easter Egg":
-- If you click on the blocky chart within one of the Google Maps info windows on a map marker,
+If you click on the blocky chart within one of the Google Maps info windows on a map marker,
 you should receive a pop-up chart showing available bikes at that station for the past thirty (30) days.
   - You can try it out here:
     * https://indego.ericoc.com/search/3022#3022
@@ -80,8 +78,8 @@ you should receive a pop-up chart showing available bikes at that station for th
     * https://indego.ericoc.com/chart/30th
 
 These charts are created using a JavaScript library called [Highcharts](http://www.highcharts.com/).
-I was even lucky enough to write a post for the [Highcharts Blog](https://www.highcharts.com/blog/) at:
-- [https://www.highcharts.com/blog/products/highcharts/250-tracking-bike-share-usage-in-philadelphia/](https://www.highcharts.com/blog/products/highcharts/250-tracking-bike-share-usage-in-philadelphia/)
+
+I was lucky enough to write a post for the [Highcharts Blog](https://www.highcharts.com/blog/) at [https://www.highcharts.com/blog/products/highcharts/250-tracking-bike-share-usage-in-philadelphia/](https://www.highcharts.com/blog/products/highcharts/250-tracking-bike-share-usage-in-philadelphia/)
 
 ### Questions?
 
