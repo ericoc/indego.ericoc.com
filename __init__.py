@@ -26,42 +26,21 @@ def _error(message='Sorry, but there was an error.', category='warn', code=500):
     return render_template('index.html.j2'), code
 
 
-@app.errorhandler(400)
-def _bad_request(message):
-    '''Bad Request (400 error handler)'''
-    return _error(message=message, category='fatal', code=400)
-
-
 @app.errorhandler(404)
 def _page_not_found(message):
     '''Page Not Found (404 error handler)'''
     return _error(message=message, code=404)
 
 
-@app.errorhandler(501)
-def _method_not_implemented(message):
-    '''Method Not Implemented (501 error handler)'''
-    return _error(message=message, category='fatal', code=501)
-
-
 @app.before_request
-def _pre():
+def pre():
     '''Get latest station added time, and current time, before request'''
     g.latest_added = _latest_added()
     g.now = datetime.now()
 
 
-@app.context_processor
-def _injects():
-    '''Variables available to all templates'''
-    return {
-        # Google Maps JavaScript API key
-        'gmaps_api_key': app.config['GMAPS_API_KEY']
-    }
-
-
 def _latest_added():
-    '''Find latest added rowtimestamp where station data is not null'''
+    '''Latest added timestamp where station data is not null'''
     return db_session.query(
         func.max(Indego.added)
     ).filter(
@@ -88,10 +67,10 @@ def _fetch_chart_data(id=None):
 
 
 def _find_stations(search=None, field=None):
-    '''Allow searching stations from the latest added database row'''
+    '''Find stations from the latest added database row'''
 
-    # Form query to get stations from the JSON PostgreSQL data
-    query = db_session.query(
+    # Form base query to get stations from the JSON PostgreSQL data
+    base_query = db_session.query(
         text("station->'properties' \"properties\"")
     ).select_from(
         Indego,
@@ -99,11 +78,13 @@ def _find_stations(search=None, field=None):
     ).filter_by(
         added=g.latest_added
     )
+    final_query = base_query
 
     # Perform any search requested
-    final_query = query
     if search:
-        final_query = query.filter(_search_stations(search=search, field=field))
+        final_query = base_query.filter(
+            _station_filter(search=search, field=field)
+        )
 
     # Execute the query
     results = final_query.all()
@@ -118,8 +99,8 @@ def _find_stations(search=None, field=None):
     return stations
 
 
-def _search_stations(search=None, field=None):
-    '''Return a filter to search for stations'''
+def _station_filter(search=None, field=None):
+    '''Query filter to search stations'''
 
     # Get length of numeric searches
     if not field and search.isnumeric():
@@ -153,7 +134,9 @@ def index():
 @app.route('/search', methods=['POST'])
 def search_form():
     '''Search form'''
-    return redirect(url_for('search_stations', search=request.form['search']))
+    return redirect(
+            url_for('search_stations', search=request.form['search'])
+        )
 
 
 @app.route('/search', methods=['GET'])
@@ -171,6 +154,7 @@ def search_stations(search=None):
                     'index.html.j2',
                     added_since=added_since,
                     added_web=added_web,
+                    gmaps_api_key=app.config['GMAPS_API_KEY'],
                     stations=stations
                 )
             )
@@ -189,16 +173,18 @@ def chart_station(chart_string=None):
     '''
     chart_stations = _find_stations(search=chart_string)
     if chart_stations:
-        return render_template('chart.html.j2',
-                               chart_stations=chart_stations,
-                               chart_string=chart_string)
+        return render_template(
+                'chart.html.j2',
+                chart_stations=chart_stations,
+                chart_string=chart_string
+            )
 
     return _page_not_found('Sorry, but no stations were found!')
 
 
 @app.route('/chartjs/<string:chartjs_string>.js', methods=['GET'])
 def chartjs_station(chartjs_string=None):
-    '''Front-end JavaScript necessary for charts'''
+    '''JavaScript definition of a chart, or multiple charts'''
     chartjs_stations = _find_stations(search=chartjs_string)
     if chartjs_stations:
         resp = make_response(
@@ -215,14 +201,15 @@ def chartjs_station(chartjs_string=None):
 
 @app.route('/chartdata/<int:id>.js', methods=['GET'])
 def chartdata_station(id=None):
-    '''Generate JavaScript using PostgreSQL data for charts, for one station'''
+    '''JavaScript using PostgreSQL data for charts, for one station'''
     chartdata_result = _find_stations(search=id, field='kioskId')[0]
     if chartdata_result:
         resp = make_response(
-            render_template('chartdata.js.j2',
-                            station=chartdata_result,
-                            chart_data=_fetch_chart_data(id)
-                            )
+                render_template(
+                    'chartdata.js.j2',
+                    station=chartdata_result,
+                    chart_data=_fetch_chart_data(id)
+                )
             )
         resp.headers['Content-Type'] = 'text/javascript'
         return resp
