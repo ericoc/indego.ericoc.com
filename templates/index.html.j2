@@ -32,30 +32,20 @@
         <meta chartset="utf-8">
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <meta name="author" content="Eric O'Callaghan">
-        <meta name="description" content="A quick and easy way to see available bicycles and docks for Philadlephia Indego bicycle-share stations">
-        <meta name="keywords" content="Indego, RideIndego, Ride Indego, Philadelphia, Philly, bikes, bikeshare, bike-share, bicycles">
+        <meta name="description" content="Charts of available bicycles and docks for Philadlephia Indego bicycle-share stations.">
+        <meta name="keywords" content="ericoc, indego, philadelphia, philly, bikes, bikeshare, bicycles, charts, graphs">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta property="og:type" content="website">
-        <meta property="og:site_name" content="Philadelphia Indego Bicycle Stations">
-        <meta property="og:title" content="Philadelphia Indego Bicycle Stations">
-        <meta property="og:description" content="A quick and easy way to see available bicycles and docks for Philadlephia Indego bicycle-share stations">
+        <meta property="og:site_name" content="indego.ericoc.com">
+        <meta property="og:title" content="indego.ericoc.com">
+        <meta property="og:description" content="Charts of available bicycles and docks for Philadlephia Indego bicycle-share stations.">
         <meta property="og:url" content="{{ url_for('index', _external=True) }}">
         <meta property="og:image" content="{{ url_for('static', filename='icon.png', _external=True) }}">
         <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet" type="text/css">
         <link rel="shortcut icon" href="{{ url_for('static', filename='icon.png') }}">
         <link rel="apple-touch-icon" href="{{ url_for('static', filename='icon.png') }}">
         <title>
-            PHL
-    {%- if search and total_stations > 1 %}
-            / {{ search | safe | truncate(15, True, '...') }}
-    {%- else %}
-        {%- if total_stations == 1 %}
-            {%- for station in stations %}
-            / {{ station['name'] | safe | truncate(20, True, '...') }}
-            {%- endfor %}
-        {%- endif %}
-    {%- endif %}
-            / {{ total_stations }} station{% if total_stations != 1 %}s{% endif %}
+            PHL / {{ total_stations }} station{% if total_stations != 1 %}s{% endif %}
         </title>
         <script type="text/javascript">
     {%- if gmaps_api_key %}
@@ -281,7 +271,7 @@
     {%- if added_web and added_since %}
             <p id="added">
                 <code title="As of: {{ added_web.strftime('%a, %d %b %Y @ %I:%M:%S %p %Z') }} ({{ added_since }} ago)">
-                    as of: {{ added_web.strftime('%a, %d %b %Y @ %I:%M:%S %p %Z') }}
+                    as of: {{ added_web.strftime('%a, %d %b %Y @ %I:%M:%S %p %Z') }} ({{ added_since }} ago)
                 </code>
             </p>
     {%- endif %}
