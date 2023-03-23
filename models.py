@@ -1,12 +1,12 @@
-"""
+'''
 https://indego.ericoc.com
 https://github.com/ericoc/indego.ericoc.com
 models.py
-"""
+'''
 from sqlalchemy import Column, DateTime, text, Text
 from sqlalchemy.dialects.postgresql import JSONB
 
-from database import Base, metadata
+from database import Base #, metadata - if metadata was used
 
 
 class Indego(Base):

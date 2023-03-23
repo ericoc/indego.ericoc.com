@@ -12,6 +12,7 @@ import requests
 from database import db_session
 from models import Indego
 
+
 # Configure logging
 logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S %Z', level=logging.INFO,
