@@ -20,8 +20,12 @@ app.config.from_pyfile('config.py')
 
 
 # Error handlers
-def _error(message='Sorry, but there was an error.', category='warn', code=500):
-    """Handle errors with flash and response code"""
+def _error(message=None, category=None, code=500):
+    """Handle errors with flash message and response code"""
+    if not message:
+        message = 'Sorry, but there was an unknown error.'
+    if not category:
+        category = 'warn'
     flash(message, category)
     return render_template('index.html.j2'), code
 
