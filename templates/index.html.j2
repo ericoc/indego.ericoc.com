@@ -1,31 +1,3 @@
-{%- macro graph(count, character) %}
-    {%- if count and count > 0 -%}
-        {%- for item in range(count) -%}{{ character }}{%- endfor -%}
-    {%- endif -%}
-{%- endmacro %}
-{%- set bikes_character = '█' %}
-{%- set docks_character = '█' %}
-{%- set bikes_css_class = 'bikes' %}
-{%- set docks_css_class = 'docks' %}
-{%- set electric_css_class = 'electric' %}
-{%- set total_stations = 0 -%}
-{%- set available_stations = 0 %}
-{%- set unavailable_stations = 0 %}
-{%- set total_bikes_available = 0 %}
-{%- set total_docks_available = 0 %}
-{%- set total_electric_available = 0 %}
-{%- set center_lat = 39.9528 %}
-{%- set center_lng = -75.1635 %}
-{%- if stations and stations is iterable and stations | length > 0 -%}
-    {%- set total_stations = stations | length %}
-    {%- set available_stations = stations | selectattr('kioskPublicStatus', '==', 'Active') | list | length %}
-    {%- set unavailable_stations = stations | selectattr('kioskPublicStatus', '!=', 'Active') | list | length %}
-    {%- set total_bikes_available = stations | sum(attribute='bikesAvailable') %}
-    {%- set total_docks_available = stations | sum(attribute='docksAvailable') %}
-    {%- set total_electric_available = stations| sum(attribute='electricBikesAvailable') %}
-    {%- set center_lat = stations | map(attribute='latitude') | sum / total_stations %}
-    {%- set center_lng = stations | map(attribute='longitude') | sum / total_stations %}
-{%- endif -%}
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -42,213 +14,72 @@
         <meta property="og:url" content="{{ url_for('index', _external=True) }}">
         <meta property="og:image" content="{{ url_for('static', filename='icon.png', _external=True) }}">
         <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
         <link rel="shortcut icon" href="{{ url_for('static', filename='icon.png') }}">
         <link rel="apple-touch-icon" href="{{ url_for('static', filename='icon.png') }}">
-        <title>
-            PHL / {{ total_stations }} station{% if total_stations != 1 %}s{% endif %}
-        </title>
+        <title>PHL / Indego stations</title>
+    {%- if stations %}
+        <script id="stations" type="application/json">{{ stations | tojson }}</script>
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
         <script type="text/javascript">
-    {%- if gmaps_api_key %}
 
-            // Start with empty markers and infowindows
-            var markers     = [];
-            var infowindows = [];
+            // Create a function to make graphs
+            function graphStation(kioskId) {
 
-            // Google map init function
-            var map;
-            function initMap() {
+                const character = '█';
+                const station = stations[kioskId];
 
-                // Create the map with its center point and zoom
-                map = new google.maps.Map(document.getElementById('map-canvas'), {
-                    center:     { lat: {{ center_lat }}, lng: {{ center_lng }} },
-                    zoom:       12,
-                    maxZoom:    18
-                });
-
-        {%- if total_stations > 1 %}
-            {%- set min_lat = stations | map(attribute='latitude') | min %}
-            {%- set min_lng = stations | map(attribute='longitude') | min %}
-            {%- set max_lat = stations | map(attribute='latitude') | max %}
-            {%- set max_lng = stations | map(attribute='longitude') | max %}
-                var bounds = new google.maps.LatLngBounds(
-                    new google.maps.LatLng({{ min_lat }}, {{ min_lng }}),
-                    new google.maps.LatLng({{ max_lat }}, {{ max_lng }})
-                );
-                map.fitBounds(bounds);
-        {%- elif total_stations == 1 %}
-                map.setZoom(18);
-        {%- endif %}
-
-        {%- if stations %}
-            {%- for station in stations %}
-                {%- set kiosk_id = station['kioskId'] %}
-              // Begin marker {{ kiosk_id }}
-                {%- set station_name = station['name'] | safe | replace("'", "\\'") | replace('"', '\\"') %}
-                {%- set non_electric = station['bikesAvailable'] - station['electricBikesAvailable'] %}
-                {%- set address_full = station['addressStreet'] + '<br>' + station['addressCity'] + ', ' + station['addressState'] +  ' ' + station['addressZipCode'] %}
-            {%- if station['kioskPublicStatus'] != 'Active' %}
-                {%- set station_status = '<span class="unavailable">' + station['kioskPublicStatus'] + '</span>' %}
-            {%- else %}
-                {%- set station_status = station['kioskPublicStatus'] %}
-            {%- endif %}
-                var contentString_{{ kiosk_id }}   = '<h4>';
-                contentString_{{ kiosk_id }} += '<a href="#{{ kiosk_id }}">{{ station_name }}</a>';
-                contentString_{{ kiosk_id }} += ' ';
-                contentString_{{ kiosk_id }} += '<a href="{{ url_for('search_stations', search=kiosk_id) }}#{{ kiosk_id }}">🔗</a>';
-                contentString_{{ kiosk_id }} += '</h4>';
-                contentString_{{ kiosk_id }} += '<div class="graph">';
-                contentString_{{ kiosk_id }} += '<a href="#{{ kiosk_id }}" target="popup" onclick="window.open(this.href,\'_self\'); window.open(\'{{ url_for('chart_station', chart_string=kiosk_id) }}\',\'popup\',\'width=800,height=500\'); return false;">';
-                contentString_{{ kiosk_id }} += '<span class="{{ bikes_css_class }}">{{ graph(non_electric, bikes_character) }}</span>';
-                contentString_{{ kiosk_id }} += '<span class="{{ electric_css_class }}">{{ graph(station["electricBikesAvailable"], bikes_character) }}</span>';
-                contentString_{{ kiosk_id }} += '<span class="{{ docks_css_class }}">{{ graph(station["docksAvailable"], docks_character) }}</span>';
-                contentString_{{ kiosk_id }} += '</a>';
-                contentString_{{ kiosk_id }} += '</div>';
-                contentString_{{ kiosk_id }} += '<b>Bikes</b>: {{ station["bikesAvailable"] }} ';
-                contentString_{{ kiosk_id }} += '({{ station["electricBikesAvailable"] }} electric)<br>';
-                contentString_{{ kiosk_id }} += '<b>Docks</b>: {{ station["docksAvailable"] }} (of {{ station["totalDocks"] }})<br>';
-                contentString_{{ kiosk_id }} += '<a href="https://www.google.com/maps/search/?api=1&query={{ station["latitude"] }},{{ station["longitude"] }}" target="_blank">';
-                contentString_{{ kiosk_id }} += '{{ address_full }}';
-                contentString_{{ kiosk_id }} += '</a>';
-                contentString_{{ kiosk_id }} += '<br>';
-                contentString_{{ kiosk_id }} += '<b>Kiosk #</b>: {{ kiosk_id }}<br>';
-                contentString_{{ kiosk_id }} += '<b>Status</b>: {{ station_status | safe }}<br>';
-                const infowindow_{{ kiosk_id }} = new google.maps.InfoWindow({
-                    content: contentString_{{ kiosk_id }},
-                });
-
-                const marker_{{ kiosk_id }} = new google.maps.Marker({
-                    position: { lat: {{ station['latitude'] }}, lng: {{ station['longitude'] }} },
-                    map,
-                    title: "{{ station_name }}",
-                    zIndex: {{ kiosk_id }}
-                });
-                marker_{{ kiosk_id }}.addListener('click', () => {
-                    closeWindows(infowindows);
-                    infowindow_{{ kiosk_id }}.open({
-                        anchor: marker_{{ kiosk_id }},
-                        map,
-                        shouldFocus: true
-                    });
-                    infowindows[{{ kiosk_id }}] = infowindow_{{ kiosk_id }};
-                });
-                markers[{{ kiosk_id }}] = marker_{{ kiosk_id }};
-
-                infowindow_{{ kiosk_id }}.addListener('closeclick', () => {
-                    delete(infowindows[{{ kiosk_id }}]);
-                });
-              // End marker {{ kiosk_id }}
-
-            {%- endfor %}
-
-                // Open infowindow for a marker if its kiosk ID is in the anchor tag
-                if (window.location.hash.substr(1)) {
-                    markerOpen(window.location.hash.substr(1));
+                let graph = '';
+                for (let i = 0; i < count; i++) {
+                    graph += character;
                 };
 
-                // If there is only a single marker available in the search results, open its infowindow
-                if (Object.keys(markers).length == 1) {
-                    for (const [id, marker] of Object.entries(markers)) {
-                        markerOpen(id);
-                    };
-                };
-
-        {%- endif %}
-
-            }; // End initMap function
+                const linkNode = document.createElement('a');
+                linkNode.appendChild(document.createTextNode(graph));
+                linkNode.className = type;
+                linkNode.href = '#' + kioskId;
+                linkNode.onclick = function() { markers[kioskId].openPopup(); };
+                linkNode.title = count + ' ' + type;
+                document.getElementById(where).appendChild(linkNode);
+            };
 
             // Create a function to pan and zoom the map to the users current GPS location, if requested
             function findMe() {
-
                 function success(pos) {
-                    var crd = pos.coords;
-                    var center_gps = { lat: crd.latitude, lng: crd.longitude };
-                    map.panTo(center_gps);
-
-                    const infowindow_gps = new google.maps.InfoWindow({
-                        content: '<h4>Your Location</h4>'
-                    });
-                    const marker_gps = new google.maps.Marker({
-                        position: center_gps,
-                        map,
-                        title: 'Your Location',
-                        icon: 'https://maps.google.com/mapfiles/ms/icons/green-dot.png',
-                        zIndex: 9999,
-                        animation: google.maps.Animation.DROP
-                    });
-                    marker_gps.addListener('click', () => {
-                        infowindow_gps.open({
-                            anchor: marker_gps,
-                            map,
-                            shouldFocus: true
-                        });
-                    });
-                    google.maps.event.trigger(marker_gps, 'click');
-                    map.setZoom(18);
+                    const crd = pos.coords;
+                    const center = { lat: crd.latitude, lng: crd.longitude };
                 };
-
-                function error(err) {
-                    console.warn(err.code, err.message);
+                function error(err) { console.warn(err.code, err.message); };
+                const options = {
+                    timeout: 10000, maximumAge: 30000, enableHighAccuracy: true
                 };
-
-                var options = {
-                    timeout: 10000,
-                    maximumAge: 30000,
-                    enableHighAccuracy: true
-                };
-
                 navigator.geolocation.getCurrentPosition(success, error, options);
             };
 
-            // Create a function to close any open infowindows for markers
-            function closeWindows(infowindows) {
-                if (infowindows) {
-                    for (const [key, value] of Object.entries(infowindows)) {
-                        infowindows[key].close();
-                        delete(infowindows[key]);
-                    };
-                };
-            };
-
-            // Create a function to open infowindows for markers by the id key
-            function markerOpen(id) {
-                google.maps.event.trigger(markers[id], 'click');
-            };
-
-    {%- endif %}
-
         </script>
-    {%- if gmaps_api_key %}
-        <script async defer src="https://maps.googleapis.com/maps/api/js?key={{ gmaps_api_key }}&callback=initMap"></script>
     {%- endif %}
     </head>
     <body>
         <div id="left-box">
             <h1 title="Philadelphia Indego Bicycles">
-                <a id="logo" href="{{ url_for('index') }}">
-                    🚲
-                </a>
+                <a id="logo" href="{{ url_for('index') }}">🚲</a>
             </h1>
             <div id="totals">
-                <h2 title="{{ available_stations }} / {{ total_stations }} station{% if total_stations != 1 %}s{% endif %} available">
-                    {{ available_stations }} / {{ total_stations }} station{% if total_stations != 1 %}s{% endif %} available
-                </h2>
-                <h3 title="{{ total_bikes_available }} bicycle{% if total_bikes_available != 1 %}s{% endif %} available ({{ total_electric_available }} electric)">
-                    {{ total_bikes_available }} bicycle{% if total_bikes_available != 1 %}s{% endif %} available
-                    ({{ total_electric_available }} electric)
-                </h3>
-                <h3 title="{{ total_docks_available }} dock{% if total_docks_available != 1 %}s{% endif %} available">
-                    {{ total_docks_available }} dock{% if total_docks_available != 1 %}s{% endif %} available
-                </h3>
+                <h2 id="available-stations"></h2>
+                <h3 id="bikes-available"></h3>
+                <h3 id="docks-available"></h3>
             </div>
             <div id="search" title="Search">
                 <button onclick="findMe();" title="My Location">📍</button>
                 <form method="post" action="{{ url_for('search_form') }}">
                     <input type="text" name="search">
-                    <i>
-                        (i.e. "<a href="{{ url_for('search_stations', search='Broad') }}">Broad</a>",
-                        "<a href="{{ url_for('search_stations', search='19107') }}">19107</a>",
-                        or "<a href="{{ url_for('search_stations', search='Market' )}}">Market</a>")
-                    </i>
+                    <label for="search">
+                        <i>
+                            (i.e. "<a href="{{ url_for('search_stations', search='Broad') }}">Broad</a>",
+                            "<a href="{{ url_for('search_stations', search='19107') }}">19107</a>",
+                            or "<a href="{{ url_for('search_stations', search='Market' )}}">Market</a>")
+                        </i>
+                    </label>
                     <input type="submit" value="Search!">
                 </form>
             </div>
@@ -265,7 +96,7 @@
             </div>
         {%- endif %}
     {%- endwith %}
-    {%- if gmaps_api_key %}
+    {%- if stations %}
             <div id="map-canvas"></div>
     {%- endif %}
     {%- if added_web and added_since %}
@@ -277,29 +108,147 @@
     {%- endif %}
         </div>
         <div id="right-box">
-    {%- if total_stations > 0 %}
+    {%- if stations %}
             <div id="station-list" title="Stations">
                 <ol>
-        {%- for station in stations %}
-            {%- set kiosk_id = station['kioskId'] %}
-                    <li id="{{ kiosk_id }}" value="{{ kiosk_id }}"{% if station['kioskPublicStatus'] != 'Active' %} class="unavailable"{% endif %}>
-                        <a href="#{{ kiosk_id }}" onclick="markerOpen({{ kiosk_id }});" title="{{ station['name'] | safe }}" class="station-link">
-                            {{ station['name'] | safe }}
-                            <div class="graph">
-                                {%- set non_electric = station['bikesAvailable'] - station['electricBikesAvailable'] %}
-                                <span title="{{ non_electric }} bike{% if non_electric != 1 %}s{% endif %}" class="{{ bikes_css_class }}">
-                                    {{- graph(non_electric, bikes_character) -}}
-                                </span><span title="{{ station['electricBikesAvailable'] }} electric bike{% if station['electricBikesAvailable'] != 1 %}s{% endif %}" class="{{ electric_css_class }}">
-                                    {{- graph(station["electricBikesAvailable"], bikes_character) -}}
-                                </span><span title="{{ station['docksAvailable'] }} dock{% if station['docksAvailable'] != 1 %}s{% endif %}" class="{{ docks_css_class }}">
-                                    {{- graph(station["docksAvailable"], docks_character) -}}
-                                </span>
-                            </div>
-                        </a>
-                    </li>
-        {%- endfor %}
                 </ol>
             </div>
+            <script type="text/javascript">
+
+                // Empty markers, latitudes, longitudes, and stations
+                const markers = [];
+                const latitudes = [];
+                const longitudes = [];
+                const stations = [];
+
+                // Parse and count station JSON objects
+                const stationsId = document.getElementById('stations');
+                const stationData = JSON.parse(stationsId.textContent);
+                const stationCount = stationData.length;
+                console.log('stationCount: ' + stationCount);
+
+                let availableStations = stationCount;
+                let totalBikesAvailable = 0;
+                let totalDocksAvailable = 0;
+                let totalElectricAvailable = 0;
+                let unavailableStations = 0;
+
+                const map = L.map('map-canvas');
+                L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap'
+                }).addTo(map);
+
+                for (const station of stationData) {
+
+                    // Get station kiosk ID, name, and status
+                    const kioskId = station['kioskId'];
+                    stations[kioskId] = station;
+                    const stationName = station['name'];
+                    const stationStatus = station['kioskPublicStatus'];
+
+                    totalBikesAvailable += station['bikesAvailable'];
+                    totalDocksAvailable += station['docksAvailable'];
+                    totalElectricAvailable += station['electricBikesAvailable'];
+
+                    if (stationStatus !== 'Active') {
+                        availableStations -= 1;
+                        unavailableStations += 1;
+                    };
+
+                    // Keep track of coordinates, for bounds min/max later
+                    const latitude = Number(station['latitude']);
+                    const longitude = Number(station['longitude']);
+                    latitudes.push(latitude);
+                    longitudes.push(longitude);
+
+                    // Start creating marker popup contents
+                    let contentString = '<h4>';
+                    contentString += '<a href="#' + kioskId + '">' + stationName + '</a>';
+                    contentString += ' ';
+                    contentString += '<a href="/search/' + kioskId + '#' + kioskId + '">🔗</a>';
+                    contentString += '</h4>';
+                    contentString += '<div class="station-graph">';
+                    contentString += '<a href="#' + kioskId + '" target="popup" onclick="window.open(this.href,\'_self\'); window.open(\'/chart/' + kioskId + '\',\'popup\',\'width=800,height=500\'); return false;">';
+                    contentString += '<span class="bikes">';
+                    for (let i = 0; i < station['classicBikesAvailable']; i++) {
+                        contentString += '█';
+                    };
+                    contentString += '</span>';
+                    contentString += '<span class="electric">';
+                    for (let i = 0; i < station['electricBikesAvailable']; i++) {
+                        contentString += '█';
+                    };
+                    contentString += '</span>';
+                    contentString += '<span class="docks">';
+                    for (let i = 0; i < station['docksAvailable']; i++) {
+                        contentString += '█';
+                    };
+                    contentString += '</span>';
+                    contentString += '</a>';
+                    contentString += '</div>';
+                    contentString += '<b>Bikes</b>: ' + station["bikesAvailable"] + ' ';
+                    contentString += '(' + station["electricBikesAvailable"] + ' electric)<br>';
+                    contentString += '<b>Docks</b>: ' + station["docksAvailable"] + ' (of ' + station["totalDocks"] + ')<br>';
+                    contentString += '<a href="https://www.google.com/maps/search/?api=1&query=' + station["latitude"] + ',' + station["longitude"] + '" target="_blank">';
+                    contentString += station['addressStreet'] + '<br>' + station['addressCity'] + ', ' + station['addressState'] +  ' ' + station['addressZipCode'];
+                    contentString += '</a>';
+                    contentString += '<br>';
+                    contentString += '<b>Kiosk #</b>: ' + kioskId + '<br>';
+                    contentString += '<b>Status</b>: <span id="station-status">' + stationStatus + '</span><br>';
+                    if (stationStatus !== 'Active') {
+                        document.getElementById('station-status').className = 'unavailable';
+                    };
+                    // Finish creating marker popup contents
+
+                    // Create map marker for each station
+                    markers[kioskId] = L.marker(
+                        [station['latitude'], station['longitude']]
+                    ).addTo(map).bindPopup(contentString).openPopup();
+
+                    // List each station
+                    const listNode = document.createElement('li');
+                    listNode.id = kioskId;
+                    listNode.value = kioskId;
+
+                    const linkNode = document.createElement('a');
+                    linkNode.appendChild(document.createTextNode(stationName));
+                    linkNode.className = 'station-link';
+                    linkNode.href = '#' + kioskId;
+                    linkNode.onclick = function() { markers[kioskId].openPopup(); };
+                    linkNode.title = stationName;
+                    listNode.appendChild(linkNode);
+
+                    document.getElementById('station-list').appendChild(listNode);
+                };
+
+                document.getElementById('available-stations').innerText = availableStations + ' / ' + stationCount + ' stations available';
+                document.getElementById('bikes-available').innerText = totalBikesAvailable + ' / ' + stationCount + ' bicycles available (' + totalElectricAvailable + ' electric)';
+                document.getElementById('docks-available').innerText = totalDocksAvailable + ' docks available';
+
+                // Set map bounds using min/max coordinates
+                map.fitBounds(
+                    [
+                        [Math.min(...latitudes), Math.min(...longitudes)],
+                        [Math.max(...latitudes), Math.max(...longitudes)]
+                    ]
+                );
+
+                // Open popup for marker if referenced by URL anchor
+                if (window.location.hash.substr(1)) {
+                    const anchor = window.location.hash.substr(1);
+                    if (markers[anchor]) {
+                        markers[anchor].openPopup();
+                    };
+                };
+
+                // Open popup if single marker
+                if (stationCount === 1) {
+                    markers[Object.keys(markers)[0]].openPopup();
+                };
+
+                //
+
+            </script>
     {%- endif %}
             <p>
                 <code>
@@ -309,3 +258,12 @@
         </div>
     </body>
 </html>
+                <!--
+                    <div class="graph">
+                        <a href="#3164" target="popup" onclick="window.open(this.href,'_self'); window.open('/chart/3164','popup','width=800,height=500'); return false;">
+                            <span class="bikes">█████</span>
+                            <span class="electric">█████████</span>
+                            <span class="docks">█</span>
+                        </a>
+                    </div>
+                -->
