@@ -79,7 +79,7 @@ def _fetch_chart_data(kiosk_id=None):
     ).order_by('added').all()
 
 
-def _find_stations(search=None, field=None):
+def _find_stations(search=None, _field=None):
     """
     Find stations from the latest added database row.
     """
@@ -98,7 +98,7 @@ def _find_stations(search=None, field=None):
     # Perform any search requested
     if search:
         final_query = base_query.filter(
-            _station_filter(search=search, field=field)
+            _station_filter(search=search, field=_field)
         )
 
     # Execute the query
@@ -136,11 +136,17 @@ def _station_filter(search=None, field=None):
         return text(f"station->'properties'->>'{field}' = '{search}'")
 
     # Search the name and addressStreet fields for the string
-    return or_(
-        text(f"station->'properties'->>'name' ILIKE '%%{search}%%'"),
-        text(f"station->'properties'->>'addressStreet' ILIKE '%%{search}%%'")
-    )
+    if search.isalnum():
+        return or_(
+            text(
+                f"station->'properties'->>'name' ILIKE '%%{search}%%'"
+            ),
+            text(
+                f"station->'properties'->>'addressStreet' ILIKE '%%{search}%%'"
+            )
+        )
 
+    return None
 
 @app.route('/', methods=['GET'])
 def index():
@@ -181,7 +187,7 @@ def search_stations(search=None):
                 stations=stations
             )
         )
-        resp.headers.set('X-Station-Count', len(stations))
+        resp.headers.set('X-Station-Count', str(len(stations)))
         return resp
 
     return _page_not_found('Sorry, but no stations were found!')
@@ -229,7 +235,7 @@ def chartdata_station(kiosk_id=None):
     """
     JavaScript using PostgreSQL data for charts, for one station.
     """
-    chartdata_result = _find_stations(search=kiosk_id, field='kioskId')[0]
+    chartdata_result = _find_stations(search=kiosk_id, _field='kioskId')[0]
     if chartdata_result:
         resp = make_response(
             render_template(
