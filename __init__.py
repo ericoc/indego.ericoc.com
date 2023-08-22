@@ -4,10 +4,9 @@ https://github.com/ericoc/indego.ericoc.com
 __init__.py
 """
 from datetime import datetime, timedelta
-import pytz
 
-from flask import Flask, flash, g, make_response, render_template, redirect, \
-    request, send_from_directory, url_for
+from flask import (Flask, flash, g, make_response, render_template, redirect,
+                   request, send_from_directory, url_for)
 from sqlalchemy import extract, func, or_, text
 
 from database import db_session
@@ -151,28 +150,29 @@ def index():
     return search_stations(search=None)
 
 
-@app.route('/search', methods=['POST'])
+@app.route('/search/', methods=['POST'])
 def search_form():
     """
     Search form.
     """
     return redirect(
-        url_for('search_stations', search=request.form['search'])
+        url_for(
+            'search_stations',
+            search=request.form['indego-search']
+        )
     )
 
 
-@app.route('/search', methods=['GET'])
 @app.route('/search/', methods=['GET'])
-@app.route('/search/<path:search>', methods=['GET'])
+@app.route('/search/<path:search>/', methods=['GET'])
 def search_stations(search=None):
     """
     Search stations.
     """
     stations = _find_stations(search=search)
     if stations:
-        timezone = pytz.timezone('US/Eastern')
-        added_web = g.latest_added.astimezone(timezone)
-        added_since = g.now.astimezone(timezone) - added_web
+        added_web = g.latest_added.astimezone(app.config['TZ'])
+        added_since = g.now.astimezone(app.config['TZ']) - added_web
         resp = make_response(
             render_template(
                 'index.html.j2',
@@ -187,7 +187,7 @@ def search_stations(search=None):
     return _page_not_found('Sorry, but no stations were found!')
 
 
-@app.route('/chart/<string:chart_string>', methods=['GET'])
+@app.route('/chart/<string:chart_string>/', methods=['GET'])
 def chart_station(chart_string=None):
     """
     Show charts of historical bicycle availability for stations.

@@ -77,6 +77,7 @@ a:hover, a:active, #station-list li:target a, #station-list li.unavailable a {
 .station-link, .station-graph {
     display:            block;
     font-size:          0.8em;
+    overflow:           hidden;
 }
 
 #station-list li:nth-child(2n) {

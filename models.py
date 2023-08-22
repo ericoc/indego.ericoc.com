@@ -6,7 +6,8 @@ models.py
 from sqlalchemy import Column, DateTime, text, Text
 from sqlalchemy.dialects.postgresql import JSONB
 
-from database import Base, metadata
+from database import Base
+
 
 class Indego(Base):
     """

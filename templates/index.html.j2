@@ -21,27 +21,6 @@
     {%- if stations %}
         <script id="stations" type="application/json">{{ stations | tojson }}</script>
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-        <script type="text/javascript">
-
-
-            // Create a function to pan and zoom the map to the users current GPS location, if requested
-            function findMe() {
-                function success(pos) {
-                    const crd = pos.coords;
-                    const center = { lat: crd.latitude, lng: crd.longitude };
-                    // Create map marker for users location
-                    L.marker(
-                        [crd.latitude, crd.longitude]
-                    ).addTo(map).bindPopup('Your Location').openPopup();
-                };
-                function error(err) { console.warn(err.code, err.message); };
-                const options = {
-                    timeout: 10000, maximumAge: 30000, enableHighAccuracy: true
-                };
-                navigator.geolocation.getCurrentPosition(success, error, options);
-            };
-
-        </script>
     {%- endif %}
     </head>
     <body>
@@ -57,8 +36,8 @@
             <div id="search" title="Search">
                 <button onclick="findMe();" title="My Location">📍</button>
                 <form method="post" action="{{ url_for('search_form') }}">
-                    <input type="text" name="search">
-                    <label for="search">
+                    <input type="text" id="indego-search" name="indego-search">
+                    <label for="indego-search">
                         <i>
                             (i.e. "<a href="{{ url_for('search_stations', search='Broad') }}">Broad</a>",
                             "<a href="{{ url_for('search_stations', search='19107') }}">19107</a>",
@@ -95,7 +74,7 @@
         <div id="right-box">
     {%- if stations %}
             <div id="station-list" title="Stations">
-                <ol>
+                <ol id="station-list-items">
                 </ol>
             </div>
             <script type="text/javascript">
@@ -104,24 +83,26 @@
                 function findMe() {
                     function success(pos) {
                         const crd = pos.coords;
-                        // const center = {
-                        //     lat: crd.latitude,
-                        //     lng: crd.longitude
-                        // };
+                        const userPos = [crd.latitude, crd.longitude];
 
-                        // Create map marker for users location
-                        L.marker(
-                            [crd.latitude, crd.longitude]
-                        ).addTo(map).bindPopup('Your Location').openPopup();
+                        // Create map marker for users location, and fly to it
+                        L.marker(userPos).addTo(map).bindPopup(
+                            'Your Location'
+                        ).openPopup();
+                        map.flyTo(userPos, 18);
                     };
                     function error(err) { console.warn(err.code, err.message); };
                     const options = {
-                        timeout: 10000, maximumAge: 30000, enableHighAccuracy: true
+                        timeout: 10000,
+                        maximumAge: 30000,
+                        enableHighAccuracy: true
                     };
-                    navigator.geolocation.getCurrentPosition(success, error, options);
+                    navigator.geolocation.getCurrentPosition(
+                        success, error, options
+                    );
                 };
 
-                // Empty markers, latitudes, longitudes, and stations
+                // Start with empty markers, latitudes, longitudes, and stations
                 const markers = [];
                 const latitudes = [];
                 const longitudes = [];
@@ -131,23 +112,32 @@
                 const stationsId = document.getElementById('stations');
                 const stationData = JSON.parse(stationsId.textContent);
                 const stationCount = stationData.length;
-                console.log('stationCount: ' + stationCount);
 
+                // Begin counting total availability
                 let availableStations = stationCount;
                 let totalBikesAvailable = 0;
                 let totalDocksAvailable = 0;
                 let totalElectricAvailable = 0;
                 let unavailableStations = 0;
 
-                // Create a function to return a linked graph of a station
+                function popChart(kioskId) {
+                    window.open('/chart/' + kioskId + '/','popup','height=500,width=800');
+                    return false;
+                };
+
+
+                // Create a function to return a text "graph" of a station
                 function graphStation (kioskId) {
 
+                    // Set the graph character, and get the station details
                     const character = '█';
                     const station = stations[kioskId];
 
+                    // Create a "graph" div to fill in
                     const divGraphNode = document.createElement('div');
                     divGraphNode.className = 'station-graph';
 
+                    // Classic graph
                     const classicNode = document.createElement('span');
                     const classicCount = station['classicBikesAvailable'];
                     classicNode.className = 'bikes';
@@ -157,6 +147,7 @@
                     };
                     divGraphNode.appendChild(classicNode);
 
+                    // Electric graph
                     const electricCount = station['electricBikesAvailable'];
                     const electricNode = document.createElement('span');
                     electricNode.className = 'electric';
@@ -166,6 +157,7 @@
                     };
                     divGraphNode.appendChild(electricNode);
 
+                    // Dock graph
                     const dockCount = station['docksAvailable'];
                     const dockNode = document.createElement('span');
                     dockNode.className = 'docks';
@@ -175,27 +167,34 @@
                     };
                     divGraphNode.appendChild(dockNode);
 
+                    // Return the "graph" div
                     return divGraphNode;
                 };
 
+                // Create Leaflet map
                 const map = L.map('map-canvas');
-                L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '&copy; OpenStreetMap'
-                }).addTo(map);
+                L.tileLayer(
+                    'https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy; OpenStreetMap'
+                    }
+                ).addTo(map);
 
+                // Loop through each station
                 for (const station of stationData) {
 
                     // Get station kiosk ID, name, and status
                     const kioskId = station['kioskId'];
                     stations[kioskId] = station;
+                    const graphNode = graphStation(kioskId);
                     const stationName = station['name'];
                     const stationStatus = station['kioskPublicStatus'];
 
+                    // Keep track of totals
                     totalBikesAvailable += station['bikesAvailable'];
-                    totalDocksAvailable += station['docksAvailable'];
                     totalElectricAvailable += station['electricBikesAvailable'];
+                    totalDocksAvailable += station['docksAvailable'];
 
-                    // Keep track of coordinates, for bounds min/max later
+                    // Keep track of coordinates, for final bounds min/max
                     const latitude = Number(station['latitude']);
                     const longitude = Number(station['longitude']);
                     latitudes.push(latitude);
@@ -207,8 +206,7 @@
                     contentString += ' ';
                     contentString += '<a href="/search/' + kioskId + '#' + kioskId + '">🔗</a>';
                     contentString += '</h4>';
-                    contentString += graphStation(kioskId).innerHTML;
-                    contentString += '<br>';
+                    contentString += graphNode.outerHTML;
                     contentString += '<b>Bikes</b>: ' + station["bikesAvailable"] + ' ';
                     contentString += '(' + station["electricBikesAvailable"] + ' electric)<br>';
                     contentString += '<b>Docks</b>: ' + station["docksAvailable"] + ' (of ' + station["totalDocks"] + ')<br>';
@@ -221,31 +219,46 @@
                     listNode.id = kioskId;
                     listNode.value = kioskId;
 
+                    // Unavailable stations have special CSS, and popup line
                     if (stationStatus !== 'Active') {
                         availableStations -= 1;
                         unavailableStations += 1;
                         listNode.className = 'unavailable';
-                        contentString += '<br><b>Status</b>: <span class="unavailable">' + stationStatus + '</span><br>';
+                        contentString += '<div class="unavailable">' + stationStatus + '</span><br>';
                     };
                     // Finish creating marker popup contents
+
+
+
+
+
+
 
                     // Create map marker for each station
                     markers[kioskId] = L.marker(
                         [station['latitude'], station['longitude']]
                     ).addTo(map).bindPopup(contentString).openPopup();
 
+                    // Link each map marker on the side of the page
                     const linkNode = document.createElement('a');
-                    linkNode.appendChild(document.createTextNode(stationName));
+                    linkNode.appendChild(
+                        document.createTextNode(stationName)
+                    );
                     linkNode.className = 'station-link';
                     linkNode.href = '#' + kioskId;
-                    linkNode.onclick = function() { markers[kioskId].openPopup(); };
+                    linkNode.onclick = function() {
+                        markers[kioskId].openPopup();
+                    };
                     linkNode.title = stationName;
+                    linkNode.appendChild(graphStation(kioskId));
                     listNode.appendChild(linkNode);
-                    listNode.appendChild(graphStation(kioskId));
 
-                    document.getElementById('station-list').appendChild(listNode);
+                    document.getElementById(
+                        'station-list-items'
+                    ).appendChild(listNode);
                 };
 
+                // Fill in totals at top of the page
                 document.getElementById('available-stations').innerText = availableStations + ' / ' + stationCount + ' stations available';
                 document.getElementById('bikes-available').innerText = totalBikesAvailable + ' bicycles available (' + totalElectricAvailable + ' electric)';
                 document.getElementById('docks-available').innerText = totalDocksAvailable + ' docks available';
@@ -271,8 +284,6 @@
                     markers[Object.keys(markers)[0]].openPopup();
                 };
 
-                //
-
             </script>
     {%- endif %}
             <p>
@@ -283,46 +294,3 @@
         </div>
     </body>
 </html>
-                <!--
-                    <div class="station-graph">
-                        <a href="#3164" target="popup" onclick="window.open(this.href,'_self'); window.open('/chart/3164','popup','width=800,height=500'); return false;">
-                            <span class="bikes">█████</span>
-                            <span class="electric">█████████</span>
-                            <span class="docks">█</span>
-                        </a>
-                    </div>
-
-                    // List linked time and device type icon
-                    const listNode = document.createElement('li');
-                    listNode.className = 'list-group-item';
-                    const textNode = document.createTextNode(titleText);
-                    const linkNode = document.createElement('a');
-                    linkNode.appendChild(textNode);
-                    linkNode.title = titleText;
-                    linkNode.href = '#' + unixTime;
-                    linkNode.onclick = function() { markers[unixTime].openPopup(); };
-                    listNode.appendChild(linkNode);
-                    seizureList.appendChild(listNode);
-
-                    contentString += '<div class="station-graph">';
-                    contentString += '<a href="#' + kioskId + '" target="popup" onclick="window.open(this.href,\'_self\'); window.open(\'/chart/' + kioskId + '\',\'popup\',\'width=800,height=500\'); return false;">';
-                    contentString += '<span class="bikes">';
-                    for (let i = 0; i < station['classicBikesAvailable']; i++) {
-                        contentString += '█';
-                    };
-                    contentString += '</span>';
-                    contentString += '<span class="electric">';
-                    for (let i = 0; i < station['electricBikesAvailable']; i++) {
-                        contentString += '█';
-                    };
-                    contentString += '</span>';
-                    contentString += '<span class="docks">';
-                    for (let i = 0; i < station['docksAvailable']; i++) {
-                        contentString += '█';
-                    };
-                    contentString += '</span>';
-                    contentString += '</a>';
-                    contentString += '</div>';
-
-<a href="#3273" target="popup" onclick="window.open(this.href,'_self'); window.open('/chart/3273','popup','width=800,height=500'); return false;"><span class="bikes"></span><span class="electric"></span><span class="docks">██████████████████</span></a>
-                -->
