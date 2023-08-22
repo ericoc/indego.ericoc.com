@@ -77,7 +77,7 @@
                 <ol id="station-list-items">
                 </ol>
             </div>
-            <script type="text/javascript">
+            <script>
 
                 // Create function to mark users current GPS location
                 function findMe() {
@@ -120,11 +120,96 @@
                 let totalElectricAvailable = 0;
                 let unavailableStations = 0;
 
-                function popChart(kioskId) {
-                    window.open('/chart/' + kioskId + '/','popup','height=500,width=800');
-                    return false;
-                };
+                // Create a function to return the contexts of a marker popup
+                function popText(kioskId) {
 
+                    const station = stations[kioskId];
+                    const stationName = station['name'];
+                    const popNode = document.createElement('div');
+
+                    // Create <h4> for station name and perma-link
+                    const headerNode = document.createElement('h4');
+
+                    // Link station name
+                    const stationLinkNode = document.createElement('a');
+                    stationLinkNode.href = '#' + kioskId;
+                    stationLinkNode.title = stationName;
+                    stationLinkNode.appendChild(
+                        document.createTextNode(stationName)
+                    );
+
+                    // Station perma-link
+                    const permaLinkNode = document.createElement('a');
+                    permaLinkNode.href = '/search/' + kioskId + '#' + kioskId;
+                    permaLinkNode.title = stationName;
+                    permaLinkNode.appendChild(
+                        document.createTextNode('🔗')
+                    );
+                    headerNode.appendChild(stationLinkNode);
+                    headerNode.appendChild(document.createTextNode(' '));
+                    headerNode.appendChild(permaLinkNode);
+                    popNode.appendChild(headerNode);
+
+                    // Link station graph to historical chart, in marker popup
+                    const stationGraphNode = document.createElement('a');
+                    stationGraphNode.href = '#' + kioskId;
+                    stationGraphNode.onclick = function () {
+                        window.open(
+                            '/chart/' + kioskId + '/',
+                            'popup','height=500,width=800'
+                        );
+                        return false;
+                    };
+                    stationGraphNode.appendChild(graphStation(kioskId));
+                    popNode.appendChild(stationGraphNode);
+
+                    // Include count of bicycles on marker popups
+                    const bikeCountNode = document.createElement('div');
+                    let bikeCountText = station["bikesAvailable"] + ' bicycles';
+                    bikeCountText += ', ' + station["classicBikesAvailable"] + ' classic';
+                    bikeCountText += ', ' + station["electricBikesAvailable"] + ' electric';
+                    bikeCountNode.appendChild(
+                        document.createTextNode(bikeCountText)
+                    );
+                    popNode.appendChild(bikeCountNode);
+
+                    // Include dock count on marker popups
+                    const dockCountNode = document.createElement('div');
+                    const dockCountText = document.createTextNode(
+                        station["docksAvailable"] + ' docks'
+                    );
+                    dockCountNode.appendChild(dockCountText);
+                    popNode.appendChild(dockCountNode);
+
+                    // Gather address text
+                    const addressNode = document.createElement('div');
+                    const addressStreetNode = document.createElement('div');
+                    addressStreetNode.appendChild(
+                        document.createTextNode(station['addressStreet'])
+                    );
+                    const addressLocalityNode = document.createElement('div');
+                    addressLocalityNode.appendChild(
+                        document.createTextNode(
+                            station['addressCity'] + ', ' +
+                            station['addressState'] + ' ' +
+                            station['addressZipCode']
+                        )
+                    );
+                    addressNode.appendChild(addressStreetNode);
+                    addressNode.appendChild(addressLocalityNode);
+
+                    // Link address text
+                    let addressUrl = 'https://www.google.com/maps/search/?api=1&query=';
+                    addressUrl += station["latitude"] + ',' + station["longitude"];
+                    const addressLinkNode = document.createElement('a');
+                    addressLinkNode.href = addressUrl;
+                    addressLinkNode.target = '_blank';
+                    addressLinkNode.appendChild(addressNode);
+                    popNode.appendChild(addressLinkNode);
+
+                    // Return the marker popup contents
+                    return popNode;
+                };
 
                 // Create a function to return a text "graph" of a station
                 function graphStation (kioskId) {
@@ -185,7 +270,6 @@
                     // Get station kiosk ID, name, and status
                     const kioskId = station['kioskId'];
                     stations[kioskId] = station;
-                    const graphNode = graphStation(kioskId);
                     const stationName = station['name'];
                     const stationStatus = station['kioskPublicStatus'];
 
@@ -199,20 +283,7 @@
                     const longitude = Number(station['longitude']);
                     latitudes.push(latitude);
                     longitudes.push(longitude);
-
-                    // Start creating marker popup contents
-                    let contentString = '<h4>';
-                    contentString += '<a href="#' + kioskId + '">' + stationName + '</a>';
-                    contentString += ' ';
-                    contentString += '<a href="/search/' + kioskId + '#' + kioskId + '">🔗</a>';
-                    contentString += '</h4>';
-                    contentString += graphNode.outerHTML;
-                    contentString += '<b>Bikes</b>: ' + station["bikesAvailable"] + ' ';
-                    contentString += '(' + station["electricBikesAvailable"] + ' electric)<br>';
-                    contentString += '<b>Docks</b>: ' + station["docksAvailable"] + ' (of ' + station["totalDocks"] + ')<br>';
-                    contentString += '<a href="https://www.google.com/maps/search/?api=1&query=' + station["latitude"] + ',' + station["longitude"] + '" target="_blank">';
-                    contentString += station['addressStreet'] + '<br>' + station['addressCity'] + ', ' + station['addressState'] +  ' ' + station['addressZipCode'];
-                    contentString += '</a>';
+                    // Finish creating marker popup contents
 
                     // Start list of each station
                     const listNode = document.createElement('li');
@@ -220,24 +291,22 @@
                     listNode.value = kioskId;
 
                     // Unavailable stations have special CSS, and popup line
+                    const popUp = popText(kioskId);
                     if (stationStatus !== 'Active') {
                         availableStations -= 1;
                         unavailableStations += 1;
-                        listNode.className = 'unavailable';
-                        contentString += '<div class="unavailable">' + stationStatus + '</span><br>';
+                        const unavailableDiv = document.createElement('div');
+                        unavailableDiv.className = 'unavailable';
+                        unavailableDiv.appendChild(
+                            document.createTextNode(stationStatus)
+                        );
+                        popUp.appendChild(unavailableDiv);
                     };
-                    // Finish creating marker popup contents
-
-
-
-
-
-
 
                     // Create map marker for each station
                     markers[kioskId] = L.marker(
                         [station['latitude'], station['longitude']]
-                    ).addTo(map).bindPopup(contentString).openPopup();
+                    ).addTo(map).bindPopup(popUp).openPopup();
 
                     // Link each map marker on the side of the page
                     const linkNode = document.createElement('a');
