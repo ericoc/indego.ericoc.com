@@ -295,6 +295,7 @@
                     if (stationStatus !== 'Active') {
                         availableStations -= 1;
                         unavailableStations += 1;
+                        listNode.className = 'unavailable';
                         const unavailableDiv = document.createElement('div');
                         unavailableDiv.className = 'unavailable';
                         unavailableDiv.appendChild(
