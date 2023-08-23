@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <meta charset="utf-8">
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <meta name="author" content="Eric O'Callaghan">
         <meta name="description" content="Charts of available bicycles and docks for Philadelphia Indego bicycle-share stations.">
@@ -116,6 +115,7 @@
                 // Begin counting total availability
                 let availableStations = stationCount;
                 let totalBikesAvailable = 0;
+                let totalClassicBikesAvailable = 0;
                 let totalDocksAvailable = 0;
                 let totalElectricAvailable = 0;
                 let unavailableStations = 0;
@@ -182,25 +182,21 @@
                     popNode.appendChild(dockCountNode);
 
                     // Gather address text
-                    const addressNode = document.createElement('div');
-                    const addressStreetNode = document.createElement('div');
-                    addressStreetNode.appendChild(
+                    const addressNode = document.createElement('span');
+                    addressNode.appendChild(
                         document.createTextNode(station['addressStreet'])
-                    );
-                    const addressLocalityNode = document.createElement('div');
-                    addressLocalityNode.appendChild(
+                    )
+                    addressNode.appendChild(document.createElement('br'));
+                    addressNode.appendChild(
                         document.createTextNode(
                             station['addressCity'] + ', ' +
                             station['addressState'] + ' ' +
                             station['addressZipCode']
                         )
                     );
-                    addressNode.appendChild(addressStreetNode);
-                    addressNode.appendChild(addressLocalityNode);
 
                     // Link address text
-                    let addressUrl = 'https://www.google.com/maps/search/?api=1&query=';
-                    addressUrl += station["latitude"] + ',' + station["longitude"];
+                    const addressUrl = 'https://www.google.com/maps/search/?api=1&query=' + station["latitude"] + ',' + station["longitude"];
                     const addressLinkNode = document.createElement('a');
                     addressLinkNode.href = addressUrl;
                     addressLinkNode.target = '_blank';
@@ -275,6 +271,7 @@
 
                     // Keep track of totals
                     totalBikesAvailable += station['bikesAvailable'];
+                    totalClassicBikesAvailable += station['classicBikesAvailable'];
                     totalElectricAvailable += station['electricBikesAvailable'];
                     totalDocksAvailable += station['docksAvailable'];
 
@@ -329,9 +326,16 @@
                 };
 
                 // Fill in totals at top of the page
-                document.getElementById('available-stations').innerText = availableStations + ' / ' + stationCount + ' stations available';
-                document.getElementById('bikes-available').innerText = totalBikesAvailable + ' bicycles available (' + totalElectricAvailable + ' electric)';
-                document.getElementById('docks-available').innerText = totalDocksAvailable + ' docks available';
+                const totalStationText = availableStations + ' / ' + stationCount + ' stations available';
+                document.getElementById('available-stations').innerText = totalStationText;
+
+                let totalBikeText = totalBikesAvailable + ' bicycles, ';
+                totalBikeText += totalClassicBikesAvailable + ' classic, ';
+                totalBikeText += totalElectricAvailable + ' electric';
+                document.getElementById('bikes-available').innerText = totalBikeText;
+
+                const totalDockText = totalDocksAvailable + ' docks available';
+                document.getElementById('docks-available').innerText = totalDockText;
 
                 // Set map bounds using min/max coordinates
                 map.fitBounds(
