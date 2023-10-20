@@ -1,9 +1,0 @@
-[Unit]
-Description=indego uwsgi
-After=network.target
-
-[Service]
-ExecStart=/var/www/indego/venv/bin/uwsgi --ini /var/www/indego/uwsgi.ini
-
-[Install]
-WantedBy=default.target
