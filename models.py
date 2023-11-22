@@ -13,18 +13,22 @@ class Indego(Base):
     """
     Indego bike-share API station data database model.
     """
-    __tablename__ = 'indego'
+    __tablename__ = "indego"
 
     # Timestamp when the row was added
-    added = Column(DateTime(True),
-                   primary_key=True,
-                   server_default=text('NOW()'))
+    added = Column(
+        DateTime(True),
+        primary_key=True,
+        server_default=text("NOW()")
+    )
 
     # JSONB response data from the Indego HTTPS API at the time
-    data = Column(JSONB(astext_type=Text()))
+    data = Column(
+        JSONB(astext_type=Text())
+    )
 
     def __repr__(self):
-        return self.__str__()
+        return f"{self.__class__.__name__}: {repr(self.__str__())}"
 
     def __str__(self):
-        return f'Indego: {len(self.data)} @ {self.added}'
+        return self.added

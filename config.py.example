@@ -3,10 +3,12 @@ https://indego.ericoc.com
 https://github.com/ericoc/indego.ericoc.com
 config.py
 """
-TESTING = False
-DEBUG = False
-SECRET_KEY = 'SECRET_REDACTED_SECRET'
+from zoneinfo import ZoneInfo
+TESTING = True
+DEBUG = True
+SECRET_KEY = 'SECRET'
 TIMEZONE = 'US/Eastern'
+TZ = ZoneInfo(TIMEZONE)
 USE_SESSION_FOR_NEXT = True
 SQLALCHEMY_URL = 'postgresql://indego:password@127.0.0.1:5432/indego'
-SQLALCHEMY_ECHO = False
+SQLALCHEMY_ECHO = True

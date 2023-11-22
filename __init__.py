@@ -5,8 +5,10 @@ __init__.py
 """
 from datetime import datetime, timedelta
 
-from flask import (Flask, flash, g, make_response, render_template, redirect,
-                   request, send_from_directory, url_for)
+from flask import (
+    Flask, flash, g, make_response, render_template, redirect, request,
+    send_from_directory, url_for
+)
 from sqlalchemy import extract, func, or_, text
 
 from database import db_session
@@ -148,7 +150,8 @@ def _station_filter(search=None, field=None):
 
     return None
 
-@app.route('/', methods=['GET'])
+
+@app.route("/", methods=["GET"])
 def index():
     """
     Main page returns all stations.
@@ -156,44 +159,44 @@ def index():
     return search_stations(search=None)
 
 
-@app.route('/search/', methods=['POST'])
+@app.route("/search/", methods=["POST"])
 def search_form():
     """
     Search form.
     """
     return redirect(
         url_for(
-            'search_stations',
-            search=request.form['indego-search']
+            "search_stations",
+            search=request.form["indego-search"]
         )
     )
 
 
-@app.route('/search/', methods=['GET'])
-@app.route('/search/<path:search>/', methods=['GET'])
+@app.route("/search/", methods=["GET"])
+@app.route("/search/<path:search>/", methods=["GET"])
 def search_stations(search=None):
     """
     Search stations.
     """
     stations = _find_stations(search=search)
     if stations:
-        added_web = g.latest_added.astimezone(app.config['TZ'])
-        added_since = g.now.astimezone(app.config['TZ']) - added_web
+        added_web = g.latest_added.astimezone(app.config["TZ"])
+        added_since = g.now.astimezone(app.config["TZ"]) - added_web
         resp = make_response(
             render_template(
-                'index.html.j2',
+                "index.html.j2",
                 added_since=added_since,
                 added_web=added_web,
                 stations=stations
             )
         )
-        resp.headers.set('X-Station-Count', str(len(stations)))
+        resp.headers.set("X-Station-Count", str(len(stations)))
         return resp
 
-    return _page_not_found('Sorry, but no stations were found!')
+    return _page_not_found("Sorry, but no stations were found!")
 
 
-@app.route('/chart/<string:chart_string>/', methods=['GET'])
+@app.route("/chart/<string:chart_string>/", methods=["GET"])
 def chart_station(chart_string=None):
     """
     Show charts of historical bicycle availability for stations.
@@ -203,15 +206,15 @@ def chart_station(chart_string=None):
     chart_stations = _find_stations(search=chart_string)
     if chart_stations:
         return render_template(
-            'chart.html.j2',
+            "chart.html.j2",
             chart_stations=chart_stations,
             chart_string=chart_string
         )
 
-    return _page_not_found('Sorry, but no stations were found!')
+    return _page_not_found("Sorry, but no stations were found!")
 
 
-@app.route('/chartjs/<string:chartjs_string>.js', methods=['GET'])
+@app.route("/chartjs/<string:chartjs_string>.js", methods=["GET"])
 def chartjs_station(chartjs_string=None):
     """
     JavaScript for a chart, or multiple charts.
@@ -220,38 +223,38 @@ def chartjs_station(chartjs_string=None):
     if chartjs_stations:
         resp = make_response(
             render_template(
-                'chart.js.j2',
+                "chart.js.j2",
                 chartjs_stations=chartjs_stations
             )
         )
-        resp.headers['Content-Type'] = 'text/javascript'
+        resp.headers["Content-Type"] = "text/javascript"
         return resp
 
-    return _page_not_found('Sorry, but no stations were found!')
+    return _page_not_found("Sorry, but no stations were found!")
 
 
-@app.route('/chartdata/<int:kiosk_id>.js', methods=['GET'])
+@app.route("/chartdata/<int:kiosk_id>.js", methods=["GET"])
 def chartdata_station(kiosk_id=None):
     """
     JavaScript using PostgreSQL data for charts, for one station.
     """
-    chartdata_result = _find_stations(search=kiosk_id, _field='kioskId')[0]
+    chartdata_result = _find_stations(search=kiosk_id, _field="kioskId")[0]
     if chartdata_result:
         resp = make_response(
             render_template(
-                'chartdata.js.j2',
+                "chartdata.js.j2",
                 station=chartdata_result,
                 chart_data=_fetch_chart_data(kiosk_id=kiosk_id)
             )
         )
-        resp.headers['Content-Type'] = 'text/javascript'
+        resp.headers["Content-Type"] = "text/javascript"
         return resp
 
-    return _page_not_found('Sorry, but no stations were found!')
+    return _page_not_found("Sorry, but no stations were found!")
 
 
-@app.route('/favicon.ico', methods=['GET'])
-@app.route('/icon.png', methods=['GET'])
+@app.route("/favicon.ico", methods=["GET"])
+@app.route("/icon.png", methods=["GET"])
 def static_from_root():
     """
     Static content.
@@ -269,5 +272,5 @@ def shutdown_session(err=None):
         raise err
 
 
-if __name__ == '__main__':
-    app.run()
+if __name__ == "__main__":
+    app.run(debug=app.config['DEBUG'])
